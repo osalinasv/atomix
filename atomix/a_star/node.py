@@ -14,6 +14,9 @@ class Node:
 	def __str__(self):
 		return str(self.position)
 
+	def __repr__(self):
+		return str(self.position)
+
 	def setCost(self, g : float, h : float):
 		self.cost = g
 		self.heuristic = h
