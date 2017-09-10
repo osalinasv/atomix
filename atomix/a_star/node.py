@@ -17,6 +17,9 @@ class Node:
 	def __repr__(self):
 		return str(self.position)
 
+	def __eq__(self, other):
+		return (self.position == other.position) if type(other) == Node else False
+
 	def setCost(self, g : float, h : float):
 		self.cost = g
 		self.heuristic = h

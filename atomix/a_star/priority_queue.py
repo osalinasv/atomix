@@ -22,7 +22,7 @@ class PriorityQueue:
 		return len(self._queue) == 0
 
 	def put(self, item, priority):
-		heapq.heappush(self._queue, (-priority, self._index, item))
+		heapq.heappush(self._queue, (priority, self._index, item))
 		self._index += 1
 
 	def pop(self):

@@ -53,7 +53,7 @@ class Diagram:
 		return 0 <= node.position[0] < self.width and 0 <= node.position[1] < self.height
 
 	def isPassable(self, node : Node):
-		return node.type == NodeType.DEFAULT
+		return node.type != NodeType.WALL
 
 	def getNode(self, position : ()):
 		return self.nodes[position[1]][position[0]]

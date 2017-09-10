@@ -7,14 +7,14 @@ def manhattanHeuristic(a : Node, b: Node) -> float:
 
 def isPositionInOpen(node : Node, list : PriorityQueue) -> Node:
 	inOpen = list.find(node)
-	if inOpen and node.position == inOpen.position:
+	if inOpen and node == inOpen:
 		return inOpen
 	else:
 		return None
 
 def isPositionInClosed(node : Node, list : []) -> Node:
 	for n in list:
-		if node.position == n.position:
+		if node == n:
 			return n
 	return None
 
@@ -26,37 +26,56 @@ def a_star(diagram : Diagram, start : Node, end : Node) -> []:
 	openList = PriorityQueue()
 	closedList = []
 
+	currentNode : Node = None
+	neighbors : [Node] = None
+	addToOpen = False
+
 	start.setCost(0, manhattanHeuristic(start, end))
 	openList.put(start, start.f)
 
 	while not openList.isEmpty():
 		currentNode = openList.pop()
-		print("current:", currentNode)
+		print("CURRENT:", currentNode)
 
-		for neighbor in diagram.getNeighbors(currentNode):
+		if currentNode == end:
+			return reconstructPath(closedList)
+
+		neighbors = diagram.getNeighbors(currentNode)
+		print("NEIGHBORS for CURRENT:", neighbors, "\n")
+		for neighbor in neighbors:
 			neighbor.parent = currentNode
-
-			if neighbor == end:
-				return reconstructPath(closedList)
 
 			cost = currentNode.cost + manhattanHeuristic(neighbor, currentNode)
 			heuristic = manhattanHeuristic(end, neighbor)
 			neighbor.setCost(cost, heuristic)
 
-			inOpen = isPositionInOpen(neighbor, openList)
-			if inOpen and inOpen.f < neighbor.f:
-				continue
-
-			inClosed = isPositionInClosed(neighbor, closedList)
-			if inClosed and inClosed.f < neighbor.f:
-				continue
-
 			print("n:", neighbor, "\t", "c:", neighbor.cost, "\t", "h:", neighbor.heuristic, "\t", "f:", neighbor.f)
-			openList.put(neighbor, neighbor.f)
-			print("open", openList)
+
+			# @Important: [closed-list] This section is causing problems.
+			addToOpen = True
+			inOpen = isPositionInOpen(neighbor, openList)
+			print("in open:", inOpen)
+			if inOpen != None and inOpen.f < neighbor.f:
+				addToOpen = False
+
+			# Sometimes nodes that are already in the closed list are added to the open list nonetheless.
+			inClosed = isPositionInClosed(neighbor, closedList)
+			print("in closed:", inClosed)
+			# Its probably due to the comparison between costs f < f.
+			if inClosed != None and inClosed.f < neighbor.f:
+				addToOpen = False
+
+			if addToOpen:
+				openList.put(neighbor, neighbor.f)
+				print("open:", openList)
+
+			# End of [closed-list] error section.
+
+			input("\nPress Enter to continue...\n")
 		print("end neighbors\n")
 
 		closedList.append(currentNode)
-		print("closed", closedList)
+		print("closed:", closedList)
+		input("\nPress Enter to continue...\n")
 
 	return reconstructPath(closedList)
