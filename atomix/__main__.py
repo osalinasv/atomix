@@ -56,7 +56,7 @@ def main(args = None):
 	diagram.drawDiagram()
 
 	path = a_star(diagram, diagram.getNode(start[0]), diagram.getNode(end[0]))
-	print(path[0])
+	print(path)
 
 if __name__ == '__main__':
 	main()

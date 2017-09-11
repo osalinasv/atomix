@@ -5,77 +5,58 @@ from a_star import PriorityQueue
 def manhattanHeuristic(a : Node, b: Node) -> float:
 	return abs(a.position[0] - b.position[0]) + abs(a.position[1] - b.position[1])
 
-def isPositionInOpen(node : Node, list : PriorityQueue) -> Node:
-	inOpen = list.find(node)
-	if inOpen and node == inOpen:
-		return inOpen
-	else:
-		return None
+def tracePath(start : Node, end : Node) -> []:
+	path = []
+	current : Node = end
 
-def isPositionInClosed(node : Node, list : []) -> Node:
-	for n in list:
-		if node == n:
-			return n
-	return None
+	while current != start:
+		if current.parent:
+			path.append(current.parent)
+			current = current.parent
+		else:
+			break
 
-def reconstructPath(closedList : []) -> []:
-	path = closedList
 	return path
 
 def a_star(diagram : Diagram, start : Node, end : Node) -> []:
 	openList = PriorityQueue()
 	closedList = []
 
-	currentNode : Node = None
-	neighbors : [Node] = None
-	addToOpen = False
-
 	start.setCost(0, manhattanHeuristic(start, end))
 	openList.put(start, start.f)
 
 	while not openList.isEmpty():
 		currentNode = openList.pop()
+		closedList.append(currentNode)
 		print("CURRENT:", currentNode)
 
 		if currentNode == end:
-			return reconstructPath(closedList)
+			return tracePath(start, end)
 
-		neighbors = diagram.getNeighbors(currentNode)
-		print("NEIGHBORS for CURRENT:", neighbors, "\n")
-		for neighbor in neighbors:
-			neighbor.parent = currentNode
+		neighbours = diagram.getNeighbours(currentNode)
+		print("NEIGHBOURS for CURRENT:", neighbours, "\n")
+		for neighbour in neighbours:
+			if neighbour in closedList:
+				print("neighbour was in closed list.")
+				continue
 
-			cost = currentNode.cost + manhattanHeuristic(neighbor, currentNode)
-			heuristic = manhattanHeuristic(end, neighbor)
-			neighbor.setCost(cost, heuristic)
+			cost = currentNode.cost + manhattanHeuristic(currentNode, neighbour)
+			inOpen = openList.find(neighbour)
+			if cost < neighbour.cost or inOpen == None:
+				heuristic = manhattanHeuristic(neighbour, end)
+				neighbour.setCost(cost, heuristic)
+				neighbour.parent = currentNode
 
-			print("n:", neighbor, "\t", "c:", neighbor.cost, "\t", "h:", neighbor.heuristic, "\t", "f:", neighbor.f)
+				if inOpen == None:
+					openList.put(neighbour, neighbour.f)
+					print("n:", neighbour, "\t", "c:", neighbour.cost, "\t", "h:", neighbour.heuristic, "\t", "f:", neighbour.f)
+					print("open:", openList)
+			else:
+				print("new cost bigger or in open list.")
 
-			# @Important: [closed-list] This section is causing problems.
-			addToOpen = True
-			inOpen = isPositionInOpen(neighbor, openList)
-			print("in open:", inOpen)
-			if inOpen != None and inOpen.f < neighbor.f:
-				addToOpen = False
+			# input("\nPress Enter to continue...\n")
 
-			# Sometimes nodes that are already in the closed list are added to the open list nonetheless.
-			inClosed = isPositionInClosed(neighbor, closedList)
-			print("in closed:", inClosed)
-			# Its probably due to the comparison between costs f < f.
-			if inClosed != None and inClosed.f < neighbor.f:
-				addToOpen = False
-
-			if addToOpen:
-				openList.put(neighbor, neighbor.f)
-				print("open:", openList)
-
-			# End of [closed-list] error section.
-
-			input("\nPress Enter to continue...\n")
-		print("end neighbors\n")
-
-		closedList.append(currentNode)
-		print("closed:", closedList)
+		print("CURRENT PATH:", tracePath(start, currentNode))
 		input("\nPress Enter to continue...\n")
 
-	return reconstructPath(closedList)
+	return tracePath(start, end)

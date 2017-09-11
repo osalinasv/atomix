@@ -64,29 +64,29 @@ class Diagram:
 				if n == node and node in list:
 					return (x, y)
 
-	def getNeighbor(self, position: (), direction: ()):
+	def getNeighbour(self, position: (), direction: ()):
 		pos = (position[0] + direction[0], position[1] + direction[1])
 
-		neighbor : Node = None
-		nextNeighbor : Node = self.getNode(pos)
+		neighbour : Node = None
+		nextNeighbour : Node = self.getNode(pos)
 
-		while self.isPassable(nextNeighbor) and self.isInBounds(nextNeighbor):
-			neighbor = nextNeighbor
+		while self.isPassable(nextNeighbour) and self.isInBounds(nextNeighbour):
+			neighbour = nextNeighbour
 
 			pos = (pos[0] + direction[0], pos[1] + direction[1])
-			nextNeighbor: Node = self.getNode(pos)
+			nextNeighbour: Node = self.getNode(pos)
 
-		return neighbor
+		return neighbour
 
-	def getNeighbors(self, node : Node):
+	def getNeighbours(self, node : Node):
 		directions = [(1, 0), (0, -1), (-1, 0), (0, 1)]
 		position = self.getNodePosition(node)
-		neighbors = []
+		neighbours = []
 
 		for direction in directions:
-			neighbor = self.getNeighbor(position, direction)
+			neighbour = self.getNeighbour(position, direction)
 
-			if (neighbor):
-				neighbors.append(neighbor)
+			if (neighbour):
+				neighbours.append(neighbour)
 
-		return neighbors
+		return neighbours

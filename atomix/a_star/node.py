@@ -4,9 +4,9 @@ from a_star import NodeType
 class Node:
 	def __init__(self, x : int, y : int, type : NodeType):
 		self.position : () = (x, y)
-		self.cost : float
-		self.heuristic : float
-		self.f : float
+		self.cost : float = 0
+		self.heuristic : float = 0
+		self.f : float = 0
 
 		self.parent : Node = None
 		self.type : NodeType = type
@@ -16,9 +16,6 @@ class Node:
 
 	def __repr__(self):
 		return str(self.position)
-
-	def __eq__(self, other):
-		return (self.position == other.position) if type(other) == Node else False
 
 	def setCost(self, g : float, h : float):
 		self.cost = g
