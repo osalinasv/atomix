@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="a_star\AStar.cs" />
     <Compile Include="a_star\Grid.cs" />
     <Compile Include="a_star\Node.cs" />
     <Compile Include="Program.cs" />

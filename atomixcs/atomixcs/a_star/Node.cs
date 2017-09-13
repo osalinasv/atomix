@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace atomixcs.a_star {
 	public struct Vector2 {
-		int x;
-		int y;
+		public int x;
+		public int y;
 
 		public Vector2(int x, int y) {
 			this.x = x;
@@ -62,12 +59,28 @@ namespace atomixcs.a_star {
 			this.is_walkable = is_walkable;
 		}
 
-		public float set_cost(float cost, float heuristic) {
+		public void set_cost(float cost, float heuristic) {
 			this.cost = cost;
 			this.heuristic = heuristic;
 			this.f_cost = this.cost + this.heuristic;
+		}
 
-			return this.f_cost;
+		public override string ToString() {
+			return "Node(" + this.position.x + ", " + this.position.y + ")";
+		}
+
+		public static void print_list(List<Node> list) {
+			Console.Write("[");
+
+			for (int i = 0; i < list.Count; i++) {
+				Console.Write(list[i]);
+
+				if (i < list.Count - 1) {
+					Console.Write(", ");
+				}
+			}
+
+			Console.WriteLine("]");
 		}
 	}
 }

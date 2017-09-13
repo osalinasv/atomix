@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using atomixcs.a_star;
 
@@ -27,6 +25,38 @@ namespace atomixcs {
 			return pixels;
 		}
 
+		static List<Vector2> get_atoms_from_image(Bitmap image) {
+			Vector2[] atoms = new Vector2[5];
+			Color carbon_color = Color.FromArgb(0, 0, 255);
+			Color hidrogen_left = Color.FromArgb(255, 255, 0);
+			Color hidrogen_top = Color.FromArgb(255, 0, 0);
+			Color hidrogen_right = Color.FromArgb(0, 255, 255);
+			Color hidrogen_bottom = Color.FromArgb(0, 255, 0);
+
+			int width = image.Width;
+			int height = image.Height;
+
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					Color color = image.GetPixel(x, y);
+
+					if (carbon_color.Equals(color)) {
+						atoms[0] = new Vector2(x, y);
+					} else if (hidrogen_right.Equals(color)) {
+						atoms[1] = new Vector2(x, y);
+					} else if (hidrogen_top.Equals(color)) {
+						atoms[2] = new Vector2(x, y);
+					} else if (hidrogen_left.Equals(color)) {
+						atoms[3] = new Vector2(x, y);
+					} else if (hidrogen_bottom.Equals(color)) {
+						atoms[4] = new Vector2(x, y);
+					}
+				}
+			}
+
+			return atoms.ToList();
+		}
+
 		static void Main(string[] args) {
 			Console.WriteLine("A* Atomix\n\n");
 
@@ -39,17 +69,14 @@ namespace atomixcs {
 			int height = diagram.Height;
 
 			List<Vector2> walls = get_walls_from_image(diagram);
-
-			List<Vector2> start = new List<Vector2> {
-				new Vector2(1, 1), new Vector2(2, 1)
-			};
-
-			List<Vector2> target = new List<Vector2> {
-				new Vector2(2, 1)
-			};
+			List<Vector2> start = get_atoms_from_image(diagram);
+			List<Vector2> target = get_atoms_from_image(solution);
 
 			Grid grid = new Grid(width, height, walls, start, target);
 			grid.draw_grid();
+
+			List<Node> path = AStar.a_star(grid, grid.get_node_from_position(start[0]), grid.get_node_from_position(target[0]));
+			Node.print_list(path);
 
 			Console.ReadLine();
 		}

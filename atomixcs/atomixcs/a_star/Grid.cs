@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace atomixcs.a_star {
 	class Grid {
@@ -11,13 +8,17 @@ namespace atomixcs.a_star {
 
 		public Node[,] nodes;
 
-		public List<Vector2> walls = new List<Vector2>();
-		public List<Vector2> start = new List<Vector2>();
-		public List<Vector2> target = new List<Vector2>();
+		public List<Vector2> walls;
+		public List<Vector2> start;
+		public List<Vector2> target;
 
 		public Grid(int width, int height) {
 			this.width = width;
 			this.height = height;
+
+			this.walls = new List<Vector2>();
+			this.start = new List<Vector2>();
+			this.target = new List<Vector2>();
 		}
 
 		public Grid(int width, int height, List<Vector2> walls, List<Vector2> start, List<Vector2> target) {
@@ -50,6 +51,52 @@ namespace atomixcs.a_star {
 					this.nodes[x, y] = new Node(x, y, is_walkable);
 				}
 			}
+		}
+
+		public bool is_node_in_bounds(Node node) {
+			return 0 <= node.position.x && node.position.x < this.width && 0 <= node.position.y && node.position.y < this.height;
+		}
+
+		public bool is_node_walkable(Node node) {
+			return node.is_walkable;
+		}
+
+		public Node get_node_from_position(Vector2 position) {
+			return this.nodes[position.x, position.y];
+		}
+
+		public Node get_closest_neighbour(Node node, Vector2 direction) {
+			Vector2 position = node.position + direction;
+
+			Node neighbour = null;
+			Node next_neighbour = this.nodes[position.x, position.y];
+
+			while (this.is_node_walkable(next_neighbour) && this.is_node_in_bounds(next_neighbour)) {
+				neighbour = next_neighbour;
+				position += direction;
+
+				next_neighbour = this.nodes[position.x, position.y];
+			}
+
+			return neighbour;
+		}
+
+		public List<Node> get_neighbours(Node node) {
+			Node neighbour = null;
+			List<Node> neighbours = new List<Node>();
+			List<Vector2> directions = new List<Vector2> {
+				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
+			};
+
+			foreach (Vector2 direction in directions) {
+				neighbour = this.get_closest_neighbour(node, direction);
+
+				if (neighbour != null) {
+					neighbours.Add(neighbour);
+				}
+			}
+
+			return neighbours;
 		}
 
 		public void draw_grid() {
