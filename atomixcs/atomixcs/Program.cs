@@ -72,8 +72,9 @@ namespace atomixcs {
 			List<Vector2> start = get_atoms_from_image(diagram);
 			List<Vector2> target = get_atoms_from_image(solution);
 
-			Grid grid = new Grid(width, height, walls, start, target);
-			grid.draw_grid();
+			Grid grid = new Grid(width, height, walls);
+			grid.draw_grid(start);
+			grid.draw_grid(target);
 
 			List<Node> path = AStar.a_star(grid, grid.get_node_from_position(start[0]), grid.get_node_from_position(target[0]));
 			Node.print_list(path);
