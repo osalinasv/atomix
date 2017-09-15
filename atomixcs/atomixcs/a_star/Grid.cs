@@ -57,6 +57,16 @@ namespace atomixcs.a_star {
 			return this.nodes[position.x, position.y];
 		}
 
+		public List<Node> get_nodes_from_positions(List<Vector2> positions) {
+			List<Node> nodes = new List<Node>();
+
+			for (int i = 0; i < positions.Count; i++) {
+				nodes.Add(get_node_from_position(positions[i]));
+			}
+
+			return nodes;
+		}
+
 		public Node get_closest_neighbour(Node node, Vector2 direction) {
 			Vector2 position = node.position + direction;
 
@@ -91,10 +101,41 @@ namespace atomixcs.a_star {
 			return neighbours;
 		}
 
-		public void draw_grid(List<Vector2> current_state) {
+		public List<State> expand_state(State current, State target) {
+			List<State> neighbouring_states = new List<State>();
+			List<Node> neighbours;
+
+			List<Node> items;
+
+			for (int i = 0; i < current.items.Count; i++) {
+				if (current.items[i].position == target.items[i].position) {
+					continue;
+				}
+
+				neighbours = get_neighbours(current.items[i]);
+
+				foreach (Node neighbour in neighbours) {
+					if (!current.items.Contains(neighbour)) {
+						items = new List<Node>(current.items);
+						items[i] = neighbour;
+
+						neighbouring_states.Add(new State(items));
+					}
+				}
+			}
+
+			return neighbouring_states;
+		}
+
+		public void draw_grid(State current_state) {
 			char character = ' ';
 			int index = -1;
 			Node node;
+
+			List<Vector2> positions = new List<Vector2>();
+			foreach (Node state_node in current_state.items) {
+				positions.Add(state_node.position);
+			}
 
 			for (int y = 0; y < this.height; y++) {
 				for (int x = 0; x < this.width; x++) {
@@ -103,7 +144,7 @@ namespace atomixcs.a_star {
 					if (!node.is_walkable) {
 						character = '\u25A0';
 					} else {
-						index = current_state.IndexOf(node.position);
+						index = positions.IndexOf(node.position);
 
 						if (index == 0) {
 							character = 'C';

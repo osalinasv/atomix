@@ -7,29 +7,19 @@ namespace atomixcs.a_star {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
-		static List<Node> retrace_path(Node start, Node target) {
-			List<Node> path = new List<Node>();
-			Node current = target;
+		static float state_heuristic(State current, State target) {
+			float heuristic = 0;
 
-			while (current != start) {
-				if (current.parent != null) {
-					path.Add(current);
-					current = current.parent;
-				} else {
-					break;
-				}
+			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
+				heuristic += manhattan_heuristic(current.items[i], target.items[i]);
 			}
 
-			if (path.Count > 0) {
-				path.Reverse();
-			}
-
-			return path;
+			return heuristic;
 		}
 
 		// @Important: replace this with proper priority queue se we can pop the lowest cost item.
-		static Node get_lowest_cost(List<Node> list) {
-			Node node = list[0];
+		static State get_lowest_cost(List<State> list) {
+			State node = list[0];
 
 			for (int i = 1; i < list.Count; i++) {
 				if (list[i].f_cost < node.f_cost) {
@@ -40,82 +30,85 @@ namespace atomixcs.a_star {
 			return node;
 		}
 
-		// @Refactor: start and target should now be of type List<Node>
-		// maybe the start, target and current_state Lists should be List<List<Node>>
-		// where each item of the List is another List representing a snapshot (state) of the atom nodes.
-		public static List<Node> a_star(Grid grid, Node start, Node target) {
-			List<Node> open_list = new List<Node>();
-			List<Node> closed_list = new List<Node>();
+		static bool compare_nodes(Node a, Node b) {
+			return a.position == b.position;
+		}
 
-			// @Refactor: add a current_state Node List to keep track of the current position of all atoms.
-			// At the start, current_state will be equal to the start List and will be the only List that will change over time.
+		static bool compare_state(State a, State b) {
+			for (int i = 0; i < a.items.Count && i < b.items.Count; i++) {
+				if (!compare_nodes(a.items[i], b.items[i])) {
+					return false;
+				}
+			}
 
-			// Each time a neighbour is selected the previous atom Node in the current_state is replaced.
-			// If target and current_state Lists are exactly equal then all atoms have reached their goal.
-			// --OR--
-			// Each time a node from current_state reaches its pair at target (hence it has reached its goal),
-			// remove that node from current_state, when current_state is empty the solution has been reached.
+			return true;
+		}
 
-			Node current_node = null;
-			List<Node> neighbours = null;
+		static bool contains_state(List<State> list, State current) {
+			foreach (State state in list) {
+				if (compare_state(state, current)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+		
+		public static List<State> a_star(Grid grid, State start_state, State target_state) {
+			List<State> open_list = new List<State>();
+			HashSet<State> closed_list = new HashSet<State>();
+
+			List<State> path = new List<State>();
+
+			State current_state = null;
+			List<State> neighbouring_states = null;
 
 			float cost = 0;
 			float heuristic = 0;
 			bool is_in_open = false;
 
-			start.set_cost(0, manhattan_heuristic(start, target));
-			open_list.Add(start);
+			start_state.set_cost(0, state_heuristic(start_state, target_state));
+			open_list.Add(start_state);
 
 			while (open_list.Count > 0) {
-				current_node = get_lowest_cost(open_list);
-				open_list.Remove(current_node);
-				closed_list.Add(current_node);
+				current_state = get_lowest_cost(open_list);
+				open_list.Remove(current_state);
+				closed_list.Add(current_state);
 
-				if (current_node == target) {
-					return retrace_path(start, target);
+				if (compare_state(current_state, target_state)) {
+					return path;
 				}
 
-				// @Refactor: because now we have multiple start points we must iterate over the current_state List and join
-				// the neighbours of all the atoms in a single List.
+				neighbouring_states = grid.expand_state(current_state, target_state);
 
-				// Once the single List of neighbours is obtained, it is filtered with the nodes in the current_state List,
-				// this way no atoms overlap each other at any moment.
-
-				neighbours = grid.get_neighbours(current_node);
-
-				foreach (Node neighbour in neighbours) {
+				foreach (State neighbour in neighbouring_states) {
 					if (closed_list.Contains(neighbour)) {
 						continue;
 					}
 
-					cost = current_node.cost + manhattan_heuristic(current_node, neighbour);
-					is_in_open = open_list.Contains(neighbour);
+					cost = current_state.cost + state_heuristic(current_state, neighbour);
+					is_in_open = contains_state(open_list, neighbour);
 
 					if (cost < neighbour.cost || !is_in_open) {
-						// @Refactor: with multiple start point the heuristic is now the sum of the manhattan distances between
-						// all current_state nodes and target nodes (this is why the order of the items is important, so
-						// current_state[0] and target[0] reference the same atom type, for example the Carbon atom).
-
-						heuristic = manhattan_heuristic(neighbour, target);
+						heuristic = state_heuristic(current_state, target_state);
 						neighbour.set_cost(cost, heuristic);
-						neighbour.parent = current_node;
+
+						// @Error: we need a way of storing states and reconstructing a path.
+						// Currenlty the path list stores all states visited, not only the ones that are part of the solution.
+						path.Add(current_state);
 
 						if (!is_in_open) {
 							open_list.Add(neighbour);
-							// Somewhere arround here is probably where we would update current_state with the atom nodes that moved.
-							// but that means we need a way of knowing which atom moved, from what node and to what node.
 						}
 					}
 				}
 
-				Console.WriteLine("\nCurrent path:");
-				Node.print_list(retrace_path(start, current_node));
+				grid.draw_grid(current_state);
+				Console.WriteLine(current_state);
 				Console.WriteLine();
-
-				// Console.ReadLine();
 			}
 
-			return retrace_path(start, target);
+			return path;
 		}
 	}
 }

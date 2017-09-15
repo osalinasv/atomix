@@ -43,15 +43,14 @@ namespace atomixcs.a_star {
 		public override int GetHashCode() {
 			return this.x ^ this.y;
 		}
+
+		public override string ToString() {
+			return "<" + this.x + "," + this.y + ">";
+		}
 	}
 
 	class Node {
 		public Vector2 position = new Vector2(0, 0);
-		public float cost = 0;
-		public float heuristic = 0;
-		public float f_cost = 0;
-
-		public Node parent = null;
 		public bool is_walkable = true;
 
 		public Node(int x, int y, bool is_walkable) {
@@ -59,28 +58,8 @@ namespace atomixcs.a_star {
 			this.is_walkable = is_walkable;
 		}
 
-		public void set_cost(float cost, float heuristic) {
-			this.cost = cost;
-			this.heuristic = heuristic;
-			this.f_cost = this.cost + this.heuristic;
-		}
-
 		public override string ToString() {
-			return "Node(" + this.position.x + ", " + this.position.y + ")";
-		}
-
-		public static void print_list(List<Node> list) {
-			Console.Write("[");
-
-			for (int i = 0; i < list.Count; i++) {
-				Console.Write(list[i]);
-
-				if (i < list.Count - 1) {
-					Console.Write(", ");
-				}
-			}
-
-			Console.WriteLine("]");
+			return "N" + this.position;
 		}
 	}
 }

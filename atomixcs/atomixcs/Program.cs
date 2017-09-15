@@ -58,6 +58,7 @@ namespace atomixcs {
 		}
 
 		static void Main(string[] args) {
+			Console.OutputEncoding = System.Text.Encoding.UTF8;
 			Console.WriteLine("A* Atomix\n\n");
 
 			string root = AppDomain.CurrentDomain.BaseDirectory;
@@ -73,11 +74,26 @@ namespace atomixcs {
 			List<Vector2> target = get_atoms_from_image(solution);
 
 			Grid grid = new Grid(width, height, walls);
-			grid.draw_grid(start);
-			grid.draw_grid(target);
 
-			List<Node> path = AStar.a_star(grid, grid.get_node_from_position(start[0]), grid.get_node_from_position(target[0]));
-			Node.print_list(path);
+			State start_state = new State(grid.get_nodes_from_positions(start));
+			State target_state = new State(grid.get_nodes_from_positions(target));
+
+			Console.WriteLine("\nSTART state:");
+			grid.draw_grid(start_state);
+			Console.WriteLine();
+
+			Console.WriteLine("\nTARGET state:");
+			grid.draw_grid(target_state);
+
+			Console.WriteLine("\n==============================================\n");
+
+			List<State> path = AStar.a_star(grid, start_state, target_state);
+
+			Console.WriteLine("\nFINAL path:");
+			foreach (State subpath in path) {
+				Console.WriteLine(subpath);
+			}
+			Console.WriteLine();
 
 			Console.ReadLine();
 		}
