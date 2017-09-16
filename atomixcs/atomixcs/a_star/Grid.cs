@@ -9,9 +9,15 @@ namespace atomixcs.a_star {
 		public Node[,] nodes;
 		public List<Vector2> walls;
 
+		public List<Vector2> directions;
+
 		public Grid(int width, int height) {
 			this.width = width;
 			this.height = height;
+
+			this.directions = new List<Vector2> {
+				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
+			};
 
 			this.walls = new List<Vector2>();
 		}
@@ -20,6 +26,10 @@ namespace atomixcs.a_star {
 			this.width = width;
 			this.height = height;
 			this.walls = walls;
+
+			this.directions = new List<Vector2> {
+				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
+			};
 
 			this.init_grid();
 		}
@@ -45,8 +55,8 @@ namespace atomixcs.a_star {
 			}
 		}
 
-		public bool is_node_in_bounds(Node node) {
-			return 0 <= node.position.x && node.position.x < this.width && 0 <= node.position.y && node.position.y < this.height;
+		public bool is_position_in_bounds(Vector2 position) {
+			return 0 <= position.x && position.x < this.width && 0 <= position.y && position.y < this.height;
 		}
 
 		public bool is_node_walkable(Node node) {
@@ -70,10 +80,14 @@ namespace atomixcs.a_star {
 		public Node get_closest_neighbour(Node node, Vector2 direction) {
 			Vector2 position = node.position + direction;
 
+			if (!this.is_position_in_bounds(position)) {
+				return null;
+			}
+
 			Node neighbour = null;
 			Node next_neighbour = this.nodes[position.x, position.y];
 
-			while (this.is_node_walkable(next_neighbour) && this.is_node_in_bounds(next_neighbour)) {
+			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour)) {
 				neighbour = next_neighbour;
 				position += direction;
 
@@ -86,12 +100,9 @@ namespace atomixcs.a_star {
 		public List<Node> get_neighbours(Node node) {
 			Node neighbour = null;
 			List<Node> neighbours = new List<Node>();
-			List<Vector2> directions = new List<Vector2> {
-				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
-			};
 
-			foreach (Vector2 direction in directions) {
-				neighbour = this.get_closest_neighbour(node, direction);
+			for (int i = 0; i < directions.Count; i++) {
+				neighbour = this.get_closest_neighbour(node, directions[i]);
 
 				if (neighbour != null) {
 					neighbours.Add(neighbour);
@@ -101,25 +112,26 @@ namespace atomixcs.a_star {
 			return neighbours;
 		}
 
-		public List<State> expand_state(State current, State target) {
+		// @Important: added a target filter so the nodes that are already in their target position are not considered
+		// in the search of neighbours, however there might be a case where a node is already in their target but needs
+		// to move to serve as a stopper for another node.
+		public List<State> expand_state(State current, State target = null) {
 			List<State> neighbouring_states = new List<State>();
 			List<Node> neighbours;
 
 			List<Node> items;
 
 			for (int i = 0; i < current.items.Count; i++) {
-				if (current.items[i].position == target.items[i].position) {
-					continue;
-				}
+				if (target == null || current.items[i].position != target.items[i].position) {
+					neighbours = get_neighbours(current.items[i]);
 
-				neighbours = get_neighbours(current.items[i]);
+					for (int j = 0; j < neighbours.Count; j++) {
+						if (!current.items.Contains(neighbours[j])) {
+							items = new List<Node>(current.items);
+							items[i] = neighbours[j];
 
-				foreach (Node neighbour in neighbours) {
-					if (!current.items.Contains(neighbour)) {
-						items = new List<Node>(current.items);
-						items[i] = neighbour;
-
-						neighbouring_states.Add(new State(items));
+							neighbouring_states.Add(new State(items));
+						}
 					}
 				}
 			}
@@ -133,8 +145,8 @@ namespace atomixcs.a_star {
 			Node node;
 
 			List<Vector2> positions = new List<Vector2>();
-			foreach (Node state_node in current_state.items) {
-				positions.Add(state_node.position);
+			for (int i = 0; i < current_state.items.Count; i++) {
+				positions.Add(current_state.items[i].position);
 			}
 
 			for (int y = 0; y < this.height; y++) {

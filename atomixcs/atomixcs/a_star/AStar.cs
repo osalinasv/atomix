@@ -3,21 +3,26 @@ using System.Collections.Generic;
 
 namespace atomixcs.a_star {
 	class AStar {
-		static float manhattan_heuristic(Node a, Node b) {
+		static float manhattan_distance(Node a, Node b) {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
+		// @Optimization: it might be a good idea to include the distance between atoms in the heuristic.
+		// The shorter the distance the closer to an answer.
 		static float state_heuristic(State current, State target) {
 			float heuristic = 0;
 
 			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
-				heuristic += manhattan_heuristic(current.items[i], target.items[i]);
+				heuristic += manhattan_distance(current.items[i], target.items[i]);
 			}
 
 			return heuristic;
 		}
 
-		// @Important: replace this with proper priority queue se we can pop the lowest cost item.
+		// @Optimization: replace this with proper priority queue so we can pop the lowest cost item more efficiently.
+		// --Note: tried implementing this PriorityQueue: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+		// but the results where x10 times slower than with this simple function, groing from ~250 iterations to ~3700
+		// on the same example.
 		static State get_lowest_cost(List<State> list) {
 			State node = list[0];
 
@@ -30,13 +35,9 @@ namespace atomixcs.a_star {
 			return node;
 		}
 
-		static bool compare_nodes(Node a, Node b) {
-			return a.position == b.position;
-		}
-
 		static bool compare_state(State a, State b) {
 			for (int i = 0; i < a.items.Count && i < b.items.Count; i++) {
-				if (!compare_nodes(a.items[i], b.items[i])) {
+				if (a.items[i].position != b.items[i].position) {
 					return false;
 				}
 			}
@@ -45,8 +46,8 @@ namespace atomixcs.a_star {
 		}
 
 		static bool contains_state(List<State> list, State current) {
-			foreach (State state in list) {
-				if (compare_state(state, current)) {
+			for (int i = 0; i < list.Count; i++) {
+				if (compare_state(list[i], current)) {
 					return true;
 				}
 			}
@@ -60,45 +61,58 @@ namespace atomixcs.a_star {
 
 			List<State> path = new List<State>();
 
-			State current_state = null;
-			List<State> neighbouring_states = null;
+			State current_state;
+			List<State> neighbouring_states;
 
-			float cost = 0;
-			float heuristic = 0;
-			bool is_in_open = false;
+			float cost;
+			float heuristic;
+			bool is_in_open;
 
 			start_state.set_cost(0, state_heuristic(start_state, target_state));
 			open_list.Add(start_state);
 
+			int iteration_count = 0; // for testing only.
+
 			while (open_list.Count > 0) {
+				iteration_count++;
+				
 				current_state = get_lowest_cost(open_list);
 				open_list.Remove(current_state);
 				closed_list.Add(current_state);
 
 				if (compare_state(current_state, target_state)) {
+					Console.WriteLine("\n==============================================\n");
+					Console.WriteLine("\nEND state:");
+
+					grid.draw_grid(current_state);
+					Console.WriteLine(current_state);
+					Console.WriteLine();
+
+					Console.WriteLine("Finished in: {0} iterations\n", iteration_count);
 					return path;
 				}
 
-				neighbouring_states = grid.expand_state(current_state, target_state);
+				// @Optimization: find a better way of detecting usable neighbour states.
+				neighbouring_states = grid.expand_state(current_state);
 
-				foreach (State neighbour in neighbouring_states) {
-					if (closed_list.Contains(neighbour)) {
+				for (int i = 0; i < neighbouring_states.Count; i++) {
+					if (closed_list.Contains(neighbouring_states[i])) {
 						continue;
 					}
 
-					cost = current_state.cost + state_heuristic(current_state, neighbour);
-					is_in_open = contains_state(open_list, neighbour);
+					cost = current_state.cost + state_heuristic(current_state, neighbouring_states[i]);
+					is_in_open = contains_state(open_list, neighbouring_states[i]);
 
-					if (cost < neighbour.cost || !is_in_open) {
+					if (cost < neighbouring_states[i].cost || !is_in_open) {
 						heuristic = state_heuristic(current_state, target_state);
-						neighbour.set_cost(cost, heuristic);
+						neighbouring_states[i].set_cost(cost, heuristic);
 
-						// @Error: we need a way of storing states and reconstructing a path.
+						// @Important: we need a way of storing states and reconstructing a path.
 						// Currenlty the path list stores all states visited, not only the ones that are part of the solution.
 						path.Add(current_state);
 
 						if (!is_in_open) {
-							open_list.Add(neighbour);
+							open_list.Add(neighbouring_states[i]);
 						}
 					}
 				}

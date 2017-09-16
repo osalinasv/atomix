@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 namespace atomixcs.a_star {
+	// This class will not be needed once we start working on Unity.
 	public struct Vector2 {
 		public int x;
 		public int y;

@@ -25,12 +25,16 @@ namespace atomixcs {
 			return pixels;
 		}
 
+		// @Robustness: change the way atoms are found to support a variable amount of atoms and not just five.
+		// Whould need to somehow detect the number of diferent colored pixels, or pass a list of expected colors
+		// in a preestablished order.
 		static List<Vector2> get_atoms_from_image(Bitmap image) {
-			Vector2[] atoms = new Vector2[5];
+			Vector2[] atoms = new Vector2[3]; // Changed this to 3 to test another level, remember to change back to 5.
+
 			Color carbon_color = Color.FromArgb(0, 0, 255);
-			Color hidrogen_left = Color.FromArgb(255, 255, 0);
-			Color hidrogen_top = Color.FromArgb(255, 0, 0);
 			Color hidrogen_right = Color.FromArgb(0, 255, 255);
+			Color hidrogen_top = Color.FromArgb(255, 0, 0);
+			Color hidrogen_left = Color.FromArgb(255, 255, 0);
 			Color hidrogen_bottom = Color.FromArgb(0, 255, 0);
 
 			int width = image.Width;
@@ -88,12 +92,6 @@ namespace atomixcs {
 			Console.WriteLine("\n==============================================\n");
 
 			List<State> path = AStar.a_star(grid, start_state, target_state);
-
-			Console.WriteLine("\nFINAL path:");
-			foreach (State subpath in path) {
-				Console.WriteLine(subpath);
-			}
-			Console.WriteLine();
 
 			Console.ReadLine();
 		}
