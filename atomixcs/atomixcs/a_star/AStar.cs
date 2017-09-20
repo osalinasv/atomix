@@ -7,22 +7,44 @@ namespace atomixcs.a_star {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
-		// @Optimization: it might be a good idea to include the distance between atoms in the heuristic.
-		// The shorter the distance the closer to an answer.
+		static float euclidean_distance(Node a, Node b) {
+			return (float) Math.Sqrt(Math.Pow(a.position.x - b.position.x, 2) + Math.Pow((a.position.y - b.position.y), 2));
+		}
+
+		/**
+		 * @Optimization: what would be a way of differentiating a closer to solved state from an unsolved/unoptimal state
+		 * represented just by a real number?
+		 **/
 		static float state_heuristic(State current, State target) {
 			float heuristic = 0;
+			float mean_distance = 0;
+			float distance = 0;
 
 			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
 				heuristic += manhattan_distance(current.items[i], target.items[i]);
+				distance = 0;
+
+				for (int j = 0; j < current.items.Count; j++) {
+					if (i != j) {
+						distance += euclidean_distance(current.items[i], current.items[j]);
+					}
+				}
+
+				mean_distance += distance / current.items.Count;
 			}
+
+			heuristic += mean_distance / current.items.Count;
 
 			return heuristic;
 		}
 
-		// @Optimization: replace this with proper priority queue so we can pop the lowest cost item more efficiently.
-		// --Note: tried implementing this PriorityQueue: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-		// but the results where x10 times slower than with this simple function, groing from ~250 iterations to ~3700
-		// on the same example.
+		/**
+		 * @Optimization: replace this with proper priority queue so we can pop the lowest cost item more efficiently.
+		 * 
+		 * --Note: tried implementing this PriorityQueue: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+		 * but the results where x10 times slower than with this simple function, going from ~250 iterations to ~3700
+		 * on the same example.
+		 **/
 		static State get_lowest_cost(List<State> list) {
 			State node = list[0];
 
@@ -35,7 +57,7 @@ namespace atomixcs.a_star {
 			return node;
 		}
 
-		static bool compare_state(State a, State b) {
+		static bool states_equal(State a, State b) {
 			for (int i = 0; i < a.items.Count && i < b.items.Count; i++) {
 				if (a.items[i].position != b.items[i].position) {
 					return false;
@@ -44,20 +66,20 @@ namespace atomixcs.a_star {
 
 			return true;
 		}
-
+		
 		static bool contains_state(List<State> list, State current) {
 			for (int i = 0; i < list.Count; i++) {
-				if (compare_state(list[i], current)) {
+				if (states_equal(list[i], current)) {
 					return true;
 				}
 			}
 
 			return false;
 		}
-		
+
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
 			List<State> open_list = new List<State>();
-			HashSet<State> closed_list = new HashSet<State>();
+			List<State> closed_list = new List<State>();
 
 			List<State> path = new List<State>();
 
@@ -80,7 +102,7 @@ namespace atomixcs.a_star {
 				open_list.Remove(current_state);
 				closed_list.Add(current_state);
 
-				if (compare_state(current_state, target_state)) {
+				if (states_equal(current_state, target_state)) {
 					Console.WriteLine("\n==============================================\n");
 					Console.WriteLine("\nEND state:");
 
@@ -96,23 +118,28 @@ namespace atomixcs.a_star {
 				neighbouring_states = grid.expand_state(current_state);
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
-					if (closed_list.Contains(neighbouring_states[i])) {
-						continue;
-					}
+					if (!contains_state(closed_list, neighbouring_states[i])) {
+						cost = current_state.cost + state_heuristic(current_state, neighbouring_states[i]);
+						is_in_open = contains_state(open_list, neighbouring_states[i]);
 
-					cost = current_state.cost + state_heuristic(current_state, neighbouring_states[i]);
-					is_in_open = contains_state(open_list, neighbouring_states[i]);
+						if (cost < neighbouring_states[i].cost || !is_in_open) {
+							heuristic = state_heuristic(current_state, target_state);
+							neighbouring_states[i].set_cost(cost, heuristic);
 
-					if (cost < neighbouring_states[i].cost || !is_in_open) {
-						heuristic = state_heuristic(current_state, target_state);
-						neighbouring_states[i].set_cost(cost, heuristic);
+							/**
+							 * @Important: we need a way of storing states and reconstructing a path.
+							 * Currenlty the path list stores all states visited, not only the ones that are part of the solution.
+							 * 
+							 * In the original algorithm, Nodes would have a parent property and the parent would be set or overwritten
+							 * with the new found optimal parent. However because we dont have a preset List of all States we cant do
+							 * that. A possible solution would be a HashTable where the keys are the States and the values are their parent State.
+							 * This way we can set/update the parents of a list of States and later reconstruct a path List.
+							 **/
+							path.Add(current_state);
 
-						// @Important: we need a way of storing states and reconstructing a path.
-						// Currenlty the path list stores all states visited, not only the ones that are part of the solution.
-						path.Add(current_state);
-
-						if (!is_in_open) {
-							open_list.Add(neighbouring_states[i]);
+							if (!is_in_open) {
+								open_list.Add(neighbouring_states[i]);
+							}
 						}
 					}
 				}

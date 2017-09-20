@@ -3,24 +3,11 @@ using System.Collections.Generic;
 
 namespace atomixcs.a_star {
 	class Grid {
-		public int width = 0;
-		public int height = 0;
-
+		public int width;
+		public int height;
 		public Node[,] nodes;
 		public List<Vector2> walls;
-
 		public List<Vector2> directions;
-
-		public Grid(int width, int height) {
-			this.width = width;
-			this.height = height;
-
-			this.directions = new List<Vector2> {
-				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
-			};
-
-			this.walls = new List<Vector2>();
-		}
 
 		public Grid(int width, int height, List<Vector2> walls) {
 			this.width = width;
@@ -43,12 +30,7 @@ namespace atomixcs.a_star {
 			for (int y = 0; y < this.height; y++) {
 				for (int x = 0; x < this.width; x++) {
 					position = new Vector2(x, y);
-
-					if (this.walls.Contains(position)) {
-						is_walkable = false;
-					} else {
-						is_walkable = true;
-					}
+					is_walkable = !this.walls.Contains(position);
 
 					this.nodes[x, y] = new Node(x, y, is_walkable);
 				}
@@ -89,17 +71,17 @@ namespace atomixcs.a_star {
 
 			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour)) {
 				neighbour = next_neighbour;
-				position += direction;
-
 				next_neighbour = this.nodes[position.x, position.y];
+
+				position += direction;
 			}
 
 			return neighbour;
 		}
 
 		public List<Node> get_neighbours(Node node) {
-			Node neighbour = null;
 			List<Node> neighbours = new List<Node>();
+			Node neighbour = null;
 
 			for (int i = 0; i < directions.Count; i++) {
 				neighbour = this.get_closest_neighbour(node, directions[i]);
@@ -112,26 +94,20 @@ namespace atomixcs.a_star {
 			return neighbours;
 		}
 
-		// @Important: added a target filter so the nodes that are already in their target position are not considered
-		// in the search of neighbours, however there might be a case where a node is already in their target but needs
-		// to move to serve as a stopper for another node.
-		public List<State> expand_state(State current, State target = null) {
+		public List<State> expand_state(State current) {
 			List<State> neighbouring_states = new List<State>();
 			List<Node> neighbours;
-
 			List<Node> items;
 
 			for (int i = 0; i < current.items.Count; i++) {
-				if (target == null || current.items[i].position != target.items[i].position) {
-					neighbours = get_neighbours(current.items[i]);
+				neighbours = get_neighbours(current.items[i]);
 
-					for (int j = 0; j < neighbours.Count; j++) {
-						if (!current.items.Contains(neighbours[j])) {
-							items = new List<Node>(current.items);
-							items[i] = neighbours[j];
+				for (int j = 0; j < neighbours.Count; j++) {
+					if (!current.items.Contains(neighbours[j])) {
+						items = new List<Node>(current.items);
+						items[i] = neighbours[j];
 
-							neighbouring_states.Add(new State(items));
-						}
+						neighbouring_states.Add(new State(items));
 					}
 				}
 			}

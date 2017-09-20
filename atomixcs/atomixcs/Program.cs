@@ -25,11 +25,13 @@ namespace atomixcs {
 			return pixels;
 		}
 
-		// @Robustness: change the way atoms are found to support a variable amount of atoms and not just five.
-		// Whould need to somehow detect the number of diferent colored pixels, or pass a list of expected colors
-		// in a preestablished order.
-		static List<Vector2> get_atoms_from_image(Bitmap image) {
-			Vector2[] atoms = new Vector2[3]; // Changed this to 3 to test another level, remember to change back to 5.
+		/**
+		 * @Robustness: change the way atoms are found to support a variable amount of atoms and not just five.
+		 * Whould need to somehow detect the number of diferent colored pixels, or pass a list of expected colors
+		 * in a preestablished order.
+		 **/
+		static List<Vector2> get_atoms_from_image(Bitmap image, int size) {
+			Vector2[] atoms = new Vector2[size];
 
 			Color carbon_color = Color.FromArgb(0, 0, 255);
 			Color hidrogen_right = Color.FromArgb(0, 255, 255);
@@ -74,8 +76,8 @@ namespace atomixcs {
 			int height = diagram.Height;
 
 			List<Vector2> walls = get_walls_from_image(diagram);
-			List<Vector2> start = get_atoms_from_image(diagram);
-			List<Vector2> target = get_atoms_from_image(solution);
+			List<Vector2> start = get_atoms_from_image(diagram, 5);
+			List<Vector2> target = get_atoms_from_image(solution, 5);
 
 			Grid grid = new Grid(width, height, walls);
 

@@ -1,9 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace atomixcs.a_star {
+	class Node {
+		public Vector2 position;
+		public bool is_walkable;
 
-namespace atomixcs.a_star {
+		public Node(int x, int y, bool is_walkable) {
+			this.position = new Vector2(x, y);
+			this.is_walkable = is_walkable;
+		}
+
+		public override string ToString() {
+			return "N" + this.position;
+		}
+	}
+
 	// This class will not be needed once we start working on Unity.
-	public struct Vector2 {
+	struct Vector2 {
 		public int x;
 		public int y;
 
@@ -47,20 +58,6 @@ namespace atomixcs.a_star {
 
 		public override string ToString() {
 			return "<" + this.x + "," + this.y + ">";
-		}
-	}
-
-	class Node {
-		public Vector2 position = new Vector2(0, 0);
-		public bool is_walkable = true;
-
-		public Node(int x, int y, bool is_walkable) {
-			this.position = new Vector2(x, y);
-			this.is_walkable = is_walkable;
-		}
-
-		public override string ToString() {
-			return "N" + this.position;
 		}
 	}
 }

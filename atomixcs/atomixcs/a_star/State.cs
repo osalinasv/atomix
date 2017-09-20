@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace atomixcs.a_star {
 	class State {
 		public List<Node> items;
-		public float cost = 0;
-		public float heuristic = 0;
-		public float f_cost = 0;
+		public float cost;
+		public float heuristic;
+		public float f_cost;
 
 		public State(List<Node> items) {
 			this.items = items;
@@ -29,7 +28,7 @@ namespace atomixcs.a_star {
 				}
 			}
 
-			str += "]";
+			str += "] h=" + this.heuristic + " f=" + this.f_cost;
 
 			return str;
 		}
