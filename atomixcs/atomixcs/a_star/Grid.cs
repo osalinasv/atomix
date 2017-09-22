@@ -27,8 +27,10 @@ namespace atomixcs.a_star {
 			bool is_walkable = true;
 			Vector2 position;
 
-			for (int y = 0; y < this.height; y++) {
-				for (int x = 0; x < this.width; x++) {
+			int x, y;
+
+			for (y = 0; y < this.height; y++) {
+				for (x = 0; x < this.width; x++) {
 					position = new Vector2(x, y);
 					is_walkable = !this.walls.Contains(position);
 
@@ -42,11 +44,15 @@ namespace atomixcs.a_star {
 		}
 
 		public bool is_node_walkable(Node node) {
-			return node.is_walkable;
+			return node != null && node.is_walkable;
 		}
 
 		public Node get_node_from_position(Vector2 position) {
-			return this.nodes[position.x, position.y];
+			if (this.is_position_in_bounds(position)) {
+				return this.nodes[position.x, position.y];
+			} else {
+				return null;
+			}
 		}
 
 		public List<Node> get_nodes_from_positions(List<Vector2> positions) {
@@ -99,10 +105,12 @@ namespace atomixcs.a_star {
 			List<Node> neighbours;
 			List<Node> items;
 
-			for (int i = 0; i < current.items.Count; i++) {
+			int i, j;
+
+			for (i = 0; i < current.items.Count; i++) {
 				neighbours = get_neighbours(current.items[i]);
 
-				for (int j = 0; j < neighbours.Count; j++) {
+				for (j = 0; j < neighbours.Count; j++) {
 					if (!current.items.Contains(neighbours[j])) {
 						items = new List<Node>(current.items);
 						items[i] = neighbours[j];
@@ -120,13 +128,15 @@ namespace atomixcs.a_star {
 			int index = -1;
 			Node node;
 
+			int i, x, y;
+
 			List<Vector2> positions = new List<Vector2>();
-			for (int i = 0; i < current_state.items.Count; i++) {
+			for (i = 0; i < current_state.items.Count; i++) {
 				positions.Add(current_state.items[i].position);
 			}
 
-			for (int y = 0; y < this.height; y++) {
-				for (int x = 0; x < this.width; x++) {
+			for (y = 0; y < this.height; y++) {
+				for (x = 0; x < this.width; x++) {
 					node = this.nodes[x, y];
 
 					if (!node.is_walkable) {

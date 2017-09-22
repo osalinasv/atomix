@@ -8,6 +8,19 @@
 			this.is_walkable = is_walkable;
 		}
 
+		public override bool Equals(object obj) {
+			if (obj == null) {
+				return false;
+			}
+
+			Node other = (Node) obj;
+			if ((System.Object) other == null) {
+				return false;
+			}
+
+			return this.position == other.position;
+		}
+
 		public override string ToString() {
 			return "N" + this.position;
 		}

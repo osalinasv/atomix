@@ -17,6 +17,25 @@ namespace atomixcs.a_star {
 			this.f_cost = this.cost + this.heuristic;
 		}
 
+		public override bool Equals(object obj) {
+			if (obj == null) {
+				return false;
+			}
+
+			State other = (State) obj;
+			if ((System.Object) other == null) {
+				return false;
+			}
+
+			for (int i = 0; i < this.items.Count && i < other.items.Count; i++) {
+				if (!this.items[i].Equals(other.items[i])) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		public override string ToString() {
 			string str = "S[";
 

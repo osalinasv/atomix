@@ -20,11 +20,13 @@ namespace atomixcs.a_star {
 			float mean_distance = 0;
 			float distance = 0;
 
-			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
+			int i, j;
+
+			for (i = 0; i < current.items.Count && i < target.items.Count; i++) {
 				heuristic += manhattan_distance(current.items[i], target.items[i]);
 				distance = 0;
 
-				for (int j = 0; j < current.items.Count; j++) {
+				for (j = 0; j < current.items.Count; j++) {
 					if (i != j) {
 						distance += euclidean_distance(current.items[i], current.items[j]);
 					}
@@ -46,30 +48,30 @@ namespace atomixcs.a_star {
 		 * on the same example.
 		 **/
 		static State get_lowest_cost(List<State> list) {
-			State node = list[0];
+			State current = list[0];
 
-			for (int i = 1; i < list.Count; i++) {
-				if (list[i].f_cost < node.f_cost) {
-					node = list[i];
+			foreach (State state in list) {
+				if (state.f_cost < current.f_cost) {
+					current = state;
 				}
 			}
 
-			return node;
+			return current;
 		}
 
-		static bool states_equal(State a, State b) {
-			for (int i = 0; i < a.items.Count && i < b.items.Count; i++) {
-				if (a.items[i].position != b.items[i].position) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-		
 		static bool contains_state(List<State> list, State current) {
-			for (int i = 0; i < list.Count; i++) {
-				if (states_equal(list[i], current)) {
+			foreach (State state in list) {
+				if (state.Equals(current)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		static bool contains_state(HashSet<State> list, State current) {
+			foreach (State state in list) {
+				if (state.Equals(current)) {
 					return true;
 				}
 			}
@@ -79,7 +81,7 @@ namespace atomixcs.a_star {
 
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
 			List<State> open_list = new List<State>();
-			List<State> closed_list = new List<State>();
+			HashSet<State> closed_list = new HashSet<State>();
 
 			List<State> path = new List<State>();
 
@@ -102,7 +104,7 @@ namespace atomixcs.a_star {
 				open_list.Remove(current_state);
 				closed_list.Add(current_state);
 
-				if (states_equal(current_state, target_state)) {
+				if (current_state.Equals(target_state)) {
 					Console.WriteLine("\n==============================================\n");
 					Console.WriteLine("\nEND state:");
 
