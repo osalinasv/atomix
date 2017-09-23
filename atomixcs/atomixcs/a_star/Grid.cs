@@ -65,7 +65,7 @@ namespace atomixcs.a_star {
 			return nodes;
 		}
 
-		public Node get_closest_neighbour(Node node, Vector2 direction) {
+		public Node get_closest_neighbour(Node node, State current, Vector2 direction) {
 			Vector2 position = node.position + direction;
 
 			if (!this.is_position_in_bounds(position)) {
@@ -75,7 +75,7 @@ namespace atomixcs.a_star {
 			Node neighbour = null;
 			Node next_neighbour = this.nodes[position.x, position.y];
 
-			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour)) {
+			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour) && !current.items.Contains(next_neighbour)) {
 				neighbour = next_neighbour;
 				next_neighbour = this.nodes[position.x, position.y];
 
@@ -85,12 +85,12 @@ namespace atomixcs.a_star {
 			return neighbour;
 		}
 
-		public List<Node> get_neighbours(Node node) {
+		public List<Node> get_neighbours(Node node, State current) {
 			List<Node> neighbours = new List<Node>();
 			Node neighbour = null;
 
-			for (int i = 0; i < directions.Count; i++) {
-				neighbour = this.get_closest_neighbour(node, directions[i]);
+			for (int i = 0; i < this.directions.Count; i++) {
+				neighbour = this.get_closest_neighbour(node, current, directions[i]);
 
 				if (neighbour != null) {
 					neighbours.Add(neighbour);
@@ -108,15 +108,13 @@ namespace atomixcs.a_star {
 			int i, j;
 
 			for (i = 0; i < current.items.Count; i++) {
-				neighbours = get_neighbours(current.items[i]);
+				neighbours = get_neighbours(current.items[i], current);
 
 				for (j = 0; j < neighbours.Count; j++) {
-					if (!current.items.Contains(neighbours[j])) {
-						items = new List<Node>(current.items);
-						items[i] = neighbours[j];
+					items = new List<Node>(current.items);
+					items[i] = neighbours[j];
 
-						neighbouring_states.Add(new State(items));
-					}
+					neighbouring_states.Add(new State(items));
 				}
 			}
 

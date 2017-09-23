@@ -7,35 +7,20 @@ namespace atomixcs.a_star {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
-		static float euclidean_distance(Node a, Node b) {
-			return (float) Math.Sqrt(Math.Pow(a.position.x - b.position.x, 2) + Math.Pow((a.position.y - b.position.y), 2));
-		}
-
 		/**
 		 * @Optimization: what would be a way of differentiating a closer to solved state from an unsolved/unoptimal state
 		 * represented just by a real number?
+		 * 
+		 * Adding the distance between the atoms themselves hindered the results in more cases than those in which it did help,
+		 * considering how close are the atoms from each other made the algorithm prefer paths that led to grouping the atoms
+		 * disregarding if they are actually close to the goal.
 		 **/
 		static float state_heuristic(State current, State target) {
 			float heuristic = 0;
-			float mean_distance = 0;
-			float distance = 0;
 
-			int i, j;
-
-			for (i = 0; i < current.items.Count && i < target.items.Count; i++) {
+			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
 				heuristic += manhattan_distance(current.items[i], target.items[i]);
-				distance = 0;
-
-				for (j = 0; j < current.items.Count; j++) {
-					if (i != j) {
-						distance += euclidean_distance(current.items[i], current.items[j]);
-					}
-				}
-
-				mean_distance += distance / current.items.Count;
 			}
-
-			heuristic += mean_distance / current.items.Count;
 
 			return heuristic;
 		}
@@ -121,11 +106,11 @@ namespace atomixcs.a_star {
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!contains_state(closed_list, neighbouring_states[i])) {
-						cost = current_state.cost + state_heuristic(current_state, neighbouring_states[i]);
+						cost = current_state.cost + state_heuristic(neighbouring_states[i], current_state);
 						is_in_open = contains_state(open_list, neighbouring_states[i]);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							heuristic = state_heuristic(current_state, target_state);
+							heuristic = state_heuristic(target_state, neighbouring_states[i]);
 							neighbouring_states[i].set_cost(cost, heuristic);
 
 							/**
