@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace atomixcs.a_star {
 	class AStar {
@@ -32,11 +33,11 @@ namespace atomixcs.a_star {
 		 * but the results where x10 times slower than with this simple function, going from ~250 iterations to ~3700
 		 * on the same example.
 		 **/
-		static State get_lowest_cost(List<State> list) {
-			State current = list[0];
+		static State get_lowest_cost(HashSet<State> list) {
+			State current = null;
 
 			foreach (State state in list) {
-				if (state.f_cost < current.f_cost) {
+				if (current == null || state.f_cost < current.f_cost) {
 					current = state;
 				}
 			}
@@ -65,7 +66,7 @@ namespace atomixcs.a_star {
 		}
 
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
-			List<State> open_list = new List<State>();
+			HashSet<State> open_list = new HashSet<State>();
 			HashSet<State> closed_list = new HashSet<State>();
 
 			List<State> path = new List<State>();
@@ -76,6 +77,10 @@ namespace atomixcs.a_star {
 			float cost;
 			float heuristic;
 			bool is_in_open;
+
+			Stopwatch watch = new Stopwatch();
+
+			watch.Start();
 
 			start_state.set_cost(0, state_heuristic(start_state, target_state));
 			open_list.Add(start_state);
@@ -90,6 +95,8 @@ namespace atomixcs.a_star {
 				closed_list.Add(current_state);
 
 				if (current_state.Equals(target_state)) {
+					watch.Stop();
+
 					Console.WriteLine("\n==============================================\n");
 					Console.WriteLine("\nEND state:");
 
@@ -97,7 +104,7 @@ namespace atomixcs.a_star {
 					Console.WriteLine(current_state);
 					Console.WriteLine();
 
-					Console.WriteLine("Finished in: {0} iterations\n", iteration_count);
+					Console.WriteLine("Finished in: {0} iterations | {1} ms\n", iteration_count, watch.ElapsedMilliseconds);
 					return path;
 				}
 
@@ -122,7 +129,14 @@ namespace atomixcs.a_star {
 							 * that. A possible solution would be a HashTable where the keys are the States and the values are their parent State.
 							 * This way we can set/update the parents of a list of States and later reconstruct a path List.
 							 **/
-							path.Add(current_state);
+
+							if (!contains_state(path, current_state)) {
+								path.Add(current_state);
+
+								// grid.draw_grid(current_state);
+								// Console.WriteLine(current_state);
+								// Console.WriteLine();
+							}
 
 							if (!is_in_open) {
 								open_list.Add(neighbouring_states[i]);
@@ -130,10 +144,6 @@ namespace atomixcs.a_star {
 						}
 					}
 				}
-
-				grid.draw_grid(current_state);
-				Console.WriteLine(current_state);
-				Console.WriteLine();
 			}
 
 			return path;
