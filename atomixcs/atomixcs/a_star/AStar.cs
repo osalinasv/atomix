@@ -46,23 +46,11 @@ namespace atomixcs.a_star {
 		}
 
 		static bool contains_state(List<State> list, State current) {
-			foreach (State state in list) {
-				if (state.Equals(current)) {
-					return true;
-				}
-			}
-
-			return false;
+			return list.Contains(current);
 		}
 
 		static bool contains_state(HashSet<State> list, State current) {
-			foreach (State state in list) {
-				if (state.Equals(current)) {
-					return true;
-				}
-			}
-
-			return false;
+			return list.Contains(current);
 		}
 
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {

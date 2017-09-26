@@ -21,6 +21,10 @@
 			return this.position == other.position;
 		}
 
+		public override int GetHashCode() {
+			return this.position.GetHashCode() * 23;
+		}
+
 		public override string ToString() {
 			return "N" + this.position;
 		}
@@ -66,7 +70,7 @@
 		}
 
 		public override int GetHashCode() {
-			return this.x ^ this.y;
+			return this.x * 23 + this.y * 23;
 		}
 
 		public override string ToString() {

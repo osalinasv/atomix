@@ -36,6 +36,16 @@ namespace atomixcs.a_star {
 			return true;
 		}
 
+		public override int GetHashCode() {
+			int hash = 0;
+
+			foreach (Node node in this.items) {
+				hash += node.GetHashCode() * 23;
+			}
+
+			return hash;
+		}
+
 		public override string ToString() {
 			string str = "S[";
 
