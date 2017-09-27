@@ -6,6 +6,7 @@ namespace atomixcs.a_star {
 		public float cost;
 		public float heuristic;
 		public float f_cost;
+		public State previous;
 
 		public State(List<Node> items) {
 			this.items = items;

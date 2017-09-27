@@ -3,11 +3,12 @@ using System.Collections.Generic;
 
 namespace atomixcs.a_star {
 	class Grid {
-		public int width;
-		public int height;
-		public Node[,] nodes;
+		private int width;
+		private int height;
+		private Node[,] nodes;
+		public State[] states;
 		public List<Vector2> walls;
-		public List<Vector2> directions;
+		private List<Vector2> directions;
 
 		public Grid(int width, int height, List<Vector2> walls) {
 			this.width = width;
@@ -65,7 +66,7 @@ namespace atomixcs.a_star {
 			return nodes;
 		}
 
-		public Node get_closest_neighbour(Node node, State current, Vector2 direction) {
+		public Node get_neighbour_in_direction(Node node, State current, Vector2 direction) {
 			Vector2 position = node.position + direction;
 
 			if (!this.is_position_in_bounds(position)) {
@@ -90,7 +91,7 @@ namespace atomixcs.a_star {
 			Node neighbour = null;
 
 			for (int i = 0; i < this.directions.Count; i++) {
-				neighbour = this.get_closest_neighbour(node, current, directions[i]);
+				neighbour = this.get_neighbour_in_direction(node, current, directions[i]);
 
 				if (neighbour != null) {
 					neighbours.Add(neighbour);

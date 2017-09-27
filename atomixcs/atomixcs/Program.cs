@@ -65,7 +65,7 @@ namespace atomixcs {
 
 		static void Main(string[] args) {
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
-			Console.WriteLine("A* Atomix\n\n");
+			Console.WriteLine("A* Atomix\n");
 
 			string root = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -76,8 +76,8 @@ namespace atomixcs {
 			int height = diagram.Height;
 
 			List<Vector2> walls = get_walls_from_image(diagram);
-			List<Vector2> start = get_atoms_from_image(diagram, 5);
-			List<Vector2> target = get_atoms_from_image(solution, 5);
+			List<Vector2> start = get_atoms_from_image(diagram, 3);
+			List<Vector2> target = get_atoms_from_image(solution, 3);
 
 			Grid grid = new Grid(width, height, walls);
 
@@ -86,14 +86,30 @@ namespace atomixcs {
 
 			Console.WriteLine("\nSTART state:");
 			grid.draw_grid(start_state);
+			Console.WriteLine(start_state);
 			Console.WriteLine();
 
 			Console.WriteLine("\nTARGET state:");
 			grid.draw_grid(target_state);
+			Console.WriteLine(target_state);
 
 			Console.WriteLine("\n==============================================\n");
 
 			List<State> path = AStar.a_star(grid, start_state, target_state);
+
+			Console.ReadLine();
+
+			Console.WriteLine("\n==============================================\n");
+
+			Console.WriteLine("\nPATH:\n");
+
+			foreach (State state in path) {
+				grid.draw_grid(state);
+				Console.WriteLine(state);
+				Console.WriteLine();
+			}
+
+			Console.WriteLine("\nSolved in: " + (path.Count - 1) + " steps.");
 
 			Console.ReadLine();
 		}
