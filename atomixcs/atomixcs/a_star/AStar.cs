@@ -33,7 +33,7 @@ namespace atomixcs.a_star {
 		 * but the results where x10 times slower than with this simple function, going from ~250 iterations to ~3700
 		 * on the same example.
 		 **/
-		static State get_lowest_cost(List<State> list) {
+		static State get_lowest_cost(HashSet<State> list) {
 			State current = null;
 
 			foreach (State state in list) {
@@ -63,19 +63,55 @@ namespace atomixcs.a_star {
 			return path;
 		}
 
+		static List<State> precompute_states(Grid grid, State start_state, State target_state) {
+			List<State> visited_states = new List<State>();
+			List<State> states = new List<State>();
+			List<State> neighbours;
+			State current;
+
+			states.Add(start_state);
+
+			while (states.Count > 0) {
+				current = states[0];
+				states.Remove(current);
+
+				if (!visited_states.Contains(current)) {
+					current.heuristic = state_heuristic(current, target_state);
+					visited_states.Add(current);
+				}
+
+				neighbours = grid.expand_state(current);
+
+				foreach (State neighbour in neighbours) {
+					if (!states.Contains(neighbour)) {
+						states.Add(neighbour);
+						current.neighbours.Add(neighbour);
+					}
+				}
+
+				if (target_state.Equals(current)) {
+					break;
+				}
+			}
+			
+			return visited_states;
+		}
+
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
-			List<State> open_list = new List<State>();
+			HashSet<State> open_list = new HashSet<State>();
 			HashSet<State> closed_list = new HashSet<State>();
 
 			State current_state;
 			List<State> neighbouring_states;
 
 			float cost;
-			float heuristic;
 			bool is_in_open;
 
 			int iteration_count = 0; // for testing only.
-			Predicate<State> stateFinder;
+
+			Console.WriteLine("Precomputing...");
+			List<State> all_states = precompute_states(grid, start_state, target_state);
+			Console.WriteLine("Found " + all_states.Count + " usable states");
 
 			Stopwatch watch = new Stopwatch();
 			watch.Start();
@@ -104,31 +140,15 @@ namespace atomixcs.a_star {
 					return reconstruct_path(current_state, start_state, target_state);
 				}
 				
-				neighbouring_states = grid.expand_state(current_state);
+				neighbouring_states = current_state.neighbours;
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!closed_list.Contains(neighbouring_states[i])) {
 						cost = current_state.cost + state_heuristic(neighbouring_states[i], current_state);
 						is_in_open = open_list.Contains(neighbouring_states[i]);
-						
-						if (is_in_open) {
-							stateFinder = (State state) => { return state.Equals(neighbouring_states[i]); };
-							neighbouring_states[i] = open_list.Find(stateFinder);
-						}
-
-						/**
-						 * Because the State objects are generated and not in a preset list all neighbouring states will
-						 * always have a cost of 0, therefor the comparison cost less than state.cost will never be true.
-						 * This means the selected path is not necessarily the shortest.
-						 * 
-						 * We might need to precompute all states and all heuristics.
-						 **/
-
-						// Console.WriteLine("cost: " + neighbouring_states[i].cost);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							heuristic = state_heuristic(target_state, neighbouring_states[i]);
-							neighbouring_states[i].set_cost(cost, heuristic);
+							neighbouring_states[i].set_cost(cost, neighbouring_states[i].heuristic);
 							neighbouring_states[i].previous = current_state;
 
 							if (!is_in_open) {

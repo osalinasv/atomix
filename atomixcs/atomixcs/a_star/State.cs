@@ -8,8 +8,11 @@ namespace atomixcs.a_star {
 		public float f_cost;
 		public State previous;
 
+		public List<State> neighbours;
+
 		public State(List<Node> items) {
 			this.items = items;
+			this.neighbours = new List<State>();
 		}
 
 		public void set_cost(float cost, float heuristic) {

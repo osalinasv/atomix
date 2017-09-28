@@ -6,7 +6,6 @@ namespace atomixcs.a_star {
 		private int width;
 		private int height;
 		private Node[,] nodes;
-		public State[] states;
 		public List<Vector2> walls;
 		private List<Vector2> directions;
 
