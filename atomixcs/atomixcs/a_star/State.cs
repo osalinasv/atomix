@@ -3,19 +3,16 @@
 namespace atomixcs.a_star {
 	class State {
 		public List<Node> items;
-		public float cost;
-		public float heuristic;
-		public float f_cost;
+		public int cost;
+		public int heuristic;
+		public int f_cost;
 		public State previous;
-
-		public List<State> neighbours;
 
 		public State(List<Node> items) {
 			this.items = items;
-			this.neighbours = new List<State>();
 		}
 
-		public void set_cost(float cost, float heuristic) {
+		public void set_cost(int cost, int heuristic) {
 			this.cost = cost;
 			this.heuristic = heuristic;
 			this.f_cost = this.cost + this.heuristic;
@@ -43,8 +40,8 @@ namespace atomixcs.a_star {
 		public override int GetHashCode() {
 			int hash = 0;
 
-			foreach (Node node in this.items) {
-				hash += node.GetHashCode() * 23;
+			for (int i = 0; i < this.items.Count; i++) {
+				hash += this.items[i].GetHashCode() * 23;
 			}
 
 			return hash;

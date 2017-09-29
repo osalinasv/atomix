@@ -66,7 +66,7 @@ namespace atomixcs {
 		static void Main(string[] args) {
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
 			Console.WriteLine("A* Atomix\n");
-
+			
 			string root = AppDomain.CurrentDomain.BaseDirectory;
 
 			Bitmap diagram = new Bitmap(root + "data/diagram.png");
@@ -76,8 +76,8 @@ namespace atomixcs {
 			int height = diagram.Height;
 
 			List<Vector2> walls = get_walls_from_image(diagram);
-			List<Vector2> start = get_atoms_from_image(diagram, 3);
-			List<Vector2> target = get_atoms_from_image(solution, 3);
+			List<Vector2> start = get_atoms_from_image(diagram, 5);
+			List<Vector2> target = get_atoms_from_image(solution, 5);
 
 			Grid grid = new Grid(width, height, walls);
 

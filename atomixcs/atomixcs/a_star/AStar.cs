@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace atomixcs.a_star {
 	class AStar {
-		static float manhattan_distance(Node a, Node b) {
+		static int manhattan_distance(Node a, Node b) {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
@@ -16,8 +16,8 @@ namespace atomixcs.a_star {
 		 * considering how close are the atoms from each other made the algorithm prefer paths that led to grouping the atoms
 		 * disregarding if they are actually close to the goal.
 		 **/
-		static float state_heuristic(State current, State target) {
-			float heuristic = 0;
+		static int state_heuristic(State current, State target) {
+			int heuristic = 0;
 
 			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
 				heuristic += manhattan_distance(current.items[i], target.items[i]);
@@ -33,12 +33,12 @@ namespace atomixcs.a_star {
 		 * but the results where x10 times slower than with this simple function, going from ~250 iterations to ~3700
 		 * on the same example.
 		 **/
-		static State get_lowest_cost(HashSet<State> list) {
+		static State get_lowest_cost(List<State> list) {
 			State current = null;
 
-			foreach (State state in list) {
-				if (current == null || state.f_cost < current.f_cost) {
-					current = state;
+			for (int i = 0; i < list.Count; i++) {
+				if (current == null || list[i].f_cost < current.f_cost) {
+					current = list[i];
 				}
 			}
 
@@ -63,57 +63,20 @@ namespace atomixcs.a_star {
 			return path;
 		}
 
-		static List<State> precompute_states(Grid grid, State start_state, State target_state) {
-			List<State> visited_states = new List<State>();
-			List<State> states = new List<State>();
-			List<State> neighbours;
-			State current;
-
-			states.Add(start_state);
-
-			while (states.Count > 0) {
-				current = states[0];
-				states.Remove(current);
-
-				if (!visited_states.Contains(current)) {
-					current.heuristic = state_heuristic(current, target_state);
-					visited_states.Add(current);
-				}
-
-				neighbours = grid.expand_state(current);
-
-				foreach (State neighbour in neighbours) {
-					if (!states.Contains(neighbour)) {
-						states.Add(neighbour);
-						current.neighbours.Add(neighbour);
-					}
-				}
-
-				if (target_state.Equals(current)) {
-					break;
-				}
-			}
-			
-			return visited_states;
-		}
-
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
-			HashSet<State> open_list = new HashSet<State>();
+			List<State> open_list = new List<State>();
 			HashSet<State> closed_list = new HashSet<State>();
 
 			State current_state;
 			List<State> neighbouring_states;
 
-			float cost;
+			int cost;
+			int heuristic;
 			bool is_in_open;
 
 			int iteration_count = 0; // for testing only.
-
-			Console.WriteLine("Precomputing...");
-			List<State> all_states = precompute_states(grid, start_state, target_state);
-			Console.WriteLine("Found " + all_states.Count + " usable states");
-
 			Stopwatch watch = new Stopwatch();
+			
 			watch.Start();
 
 			start_state.set_cost(0, state_heuristic(start_state, target_state));
@@ -140,7 +103,7 @@ namespace atomixcs.a_star {
 					return reconstruct_path(current_state, start_state, target_state);
 				}
 				
-				neighbouring_states = current_state.neighbours;
+				neighbouring_states = grid.expand_state(current_state, target_state);
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!closed_list.Contains(neighbouring_states[i])) {
@@ -148,7 +111,8 @@ namespace atomixcs.a_star {
 						is_in_open = open_list.Contains(neighbouring_states[i]);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							neighbouring_states[i].set_cost(cost, neighbouring_states[i].heuristic);
+							heuristic = state_heuristic(neighbouring_states[i], target_state);
+							neighbouring_states[i].set_cost(cost, heuristic);
 							neighbouring_states[i].previous = current_state;
 
 							if (!is_in_open) {

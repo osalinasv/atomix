@@ -8,6 +8,7 @@ namespace atomixcs.a_star {
 		private Node[,] nodes;
 		public List<Vector2> walls;
 		private List<Vector2> directions;
+		private List<State> cached_states;
 
 		public Grid(int width, int height, List<Vector2> walls) {
 			this.width = width;
@@ -17,6 +18,8 @@ namespace atomixcs.a_star {
 			this.directions = new List<Vector2> {
 				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
 			};
+
+			this.cached_states = new List<State>();
 
 			this.init_grid();
 		}
@@ -100,21 +103,42 @@ namespace atomixcs.a_star {
 			return neighbours;
 		}
 
-		public List<State> expand_state(State current) {
+		public List<State> expand_state(State current, State target_state) {
 			List<State> neighbouring_states = new List<State>();
 			List<Node> neighbours;
-			List<Node> items;
 
-			int i, j;
+			State new_state = null;
+			List<Node> items;
+			int i, j, index;
 
 			for (i = 0; i < current.items.Count; i++) {
 				neighbours = get_neighbours(current.items[i], current);
 
 				for (j = 0; j < neighbours.Count; j++) {
-					items = new List<Node>(current.items);
-					items[i] = neighbours[j];
+					items = new List<Node>(current.items) {
+						[i] = neighbours[j]
+					};
 
-					neighbouring_states.Add(new State(items));
+					new_state = new State(items);
+					index = -1;
+
+					if (this.cached_states.Count > 0) {
+						index = this.cached_states.IndexOf(new_state);
+
+						if (index >= 0) {
+							new_state = this.cached_states[index];
+						}
+					}
+					
+					if (index == -1) {
+						this.cached_states.Add(new_state);
+					}
+
+					neighbouring_states.Add(new_state);
+
+					if (target_state.Equals(new_state)) {
+						return neighbouring_states;
+					}
 				}
 			}
 
