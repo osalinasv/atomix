@@ -76,20 +76,20 @@ namespace atomixcs {
 			int height = diagram.Height;
 
 			List<Vector2> walls = get_walls_from_image(diagram);
-			List<Vector2> start = get_atoms_from_image(diagram, 5);
-			List<Vector2> target = get_atoms_from_image(solution, 5);
+			List<Vector2> start = get_atoms_from_image(diagram, 3);
+			List<Vector2> target = get_atoms_from_image(solution, 3);
 
 			Grid grid = new Grid(width, height, walls);
 
 			State start_state = new State(grid.get_nodes_from_positions(start));
 			State target_state = new State(grid.get_nodes_from_positions(target));
 
-			Console.WriteLine("\nSTART state:");
+			Console.WriteLine("START state:");
 			grid.draw_grid(start_state);
 			Console.WriteLine(start_state);
 			Console.WriteLine();
 
-			Console.WriteLine("\nTARGET state:");
+			Console.WriteLine("TARGET state:");
 			grid.draw_grid(target_state);
 			Console.WriteLine(target_state);
 
@@ -101,15 +101,19 @@ namespace atomixcs {
 
 			Console.WriteLine("\n==============================================\n");
 
-			Console.WriteLine("\nPATH:\n");
+			if (path != null && path.Count > 0) {
+				Console.WriteLine("PATH:");
 
-			foreach (State state in path) {
-				grid.draw_grid(state);
-				Console.WriteLine(state);
-				Console.WriteLine();
+				foreach (State state in path) {
+					grid.draw_grid(state);
+					Console.WriteLine(state);
+					Console.WriteLine();
+				}
+
+				Console.WriteLine("Solved in: " + (path.Count - 1) + " steps.");
+			} else {
+				Console.WriteLine("No solution found");
 			}
-
-			Console.WriteLine("\nSolved in: " + (path.Count - 1) + " steps.");
 
 			Console.ReadLine();
 		}

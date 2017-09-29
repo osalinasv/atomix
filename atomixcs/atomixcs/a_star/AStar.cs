@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using Priority_Queue;
+
 namespace atomixcs.a_star {
 	class AStar {
 		static int manhattan_distance(Node a, Node b) {
@@ -26,25 +28,6 @@ namespace atomixcs.a_star {
 			return heuristic;
 		}
 
-		/**
-		 * @Optimization: replace this with proper priority queue so we can pop the lowest cost item more efficiently.
-		 * 
-		 * --Note: tried implementing this PriorityQueue: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-		 * but the results where x10 times slower than with this simple function, going from ~250 iterations to ~3700
-		 * on the same example.
-		 **/
-		static State get_lowest_cost(List<State> list) {
-			State current = null;
-
-			for (int i = 0; i < list.Count; i++) {
-				if (current == null || list[i].f_cost < current.f_cost) {
-					current = list[i];
-				}
-			}
-
-			return current;
-		}
-
 		static List<State> reconstruct_path(State current_state, State start_state, State target_state) {
 			List<State> path = new List<State>();
 			State current = current_state;
@@ -64,14 +47,13 @@ namespace atomixcs.a_star {
 		}
 
 		public static List<State> a_star(Grid grid, State start_state, State target_state) {
-			List<State> open_list = new List<State>();
+			SimplePriorityQueue<State, int> open_list = new SimplePriorityQueue<State, int>();
 			HashSet<State> closed_list = new HashSet<State>();
 
 			State current_state;
 			List<State> neighbouring_states;
 
 			int cost;
-			int heuristic;
 			bool is_in_open;
 
 			int iteration_count = 0; // for testing only.
@@ -80,13 +62,12 @@ namespace atomixcs.a_star {
 			watch.Start();
 
 			start_state.set_cost(0, state_heuristic(start_state, target_state));
-			open_list.Add(start_state);
+			open_list.Enqueue(start_state, start_state.f_cost);
 
 			while (open_list.Count > 0) {
 				iteration_count++;
 
-				current_state = get_lowest_cost(open_list);
-				open_list.Remove(current_state);
+				current_state = open_list.Dequeue();
 				closed_list.Add(current_state);
 
 				if (current_state.Equals(target_state)) {
@@ -111,12 +92,11 @@ namespace atomixcs.a_star {
 						is_in_open = open_list.Contains(neighbouring_states[i]);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							heuristic = state_heuristic(neighbouring_states[i], target_state);
-							neighbouring_states[i].set_cost(cost, heuristic);
+							neighbouring_states[i].set_cost(cost, state_heuristic(neighbouring_states[i], target_state));
 							neighbouring_states[i].previous = current_state;
 
 							if (!is_in_open) {
-								open_list.Add(neighbouring_states[i]);
+								open_list.Enqueue(neighbouring_states[i], neighbouring_states[i].f_cost);
 							}
 						}
 					}
