@@ -28,6 +28,14 @@ namespace atomixcs.a_star {
 				return false;
 			}
 
+			if (this.items == null || this.items.Count <= 0) {
+				if (other.items == null || this.items.Count <= 0) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+
 			for (int i = 0; i < this.items.Count && i < other.items.Count; i++) {
 				if (!this.items[i].Equals(other.items[i])) {
 					return false;
@@ -40,8 +48,12 @@ namespace atomixcs.a_star {
 		public override int GetHashCode() {
 			int hash = 0;
 
-			for (int i = 0; i < this.items.Count; i++) {
-				hash += this.items[i].GetHashCode() * 23;
+			if (this.items != null && this.items.Count > 0) {
+				for (int i = 0; i < this.items.Count; i++) {
+					hash += this.items[i].GetHashCode() * 23;
+				}
+			} else {
+				hash = base.GetHashCode();
 			}
 
 			return hash;

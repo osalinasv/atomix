@@ -56,9 +56,13 @@ namespace atomixcs.a_star {
 			int cost;
 			bool is_in_open;
 
-			int iteration_count = 0; // for testing only.
+			/** For testing only. **/
+			int iteration_count = 0;
+			int cached_count = 0;
+			int new_count = 0;
 			Stopwatch watch = new Stopwatch();
-			
+			/** For testing only. **/
+
 			watch.Start();
 
 			start_state.set_cost(0, state_heuristic(start_state, target_state));
@@ -73,23 +77,27 @@ namespace atomixcs.a_star {
 				if (current_state.Equals(target_state)) {
 					watch.Stop();
 
-					Console.WriteLine("\n==============================================\n");
-					Console.WriteLine("\nEND state:");
-
+					Console.WriteLine("END state:");
 					grid.draw_grid(current_state);
 					Console.WriteLine(current_state);
-					Console.WriteLine();
 
-					Console.WriteLine("Finished in: {0} iterations | {1} ms\n", iteration_count, watch.ElapsedMilliseconds);
+					Console.WriteLine("\nFinished in: {0} iterations | {1} ms", iteration_count, watch.ElapsedMilliseconds);
+					Console.WriteLine("Reused " + cached_count + " states and created " + new_count + " new states");
 					return reconstruct_path(current_state, start_state, target_state);
 				}
-				
+
 				neighbouring_states = grid.expand_state(current_state, target_state);
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!closed_list.Contains(neighbouring_states[i])) {
 						cost = current_state.cost + state_heuristic(neighbouring_states[i], current_state);
 						is_in_open = open_list.Contains(neighbouring_states[i]);
+
+						if (neighbouring_states[i].cost == 0) {
+							new_count++;
+						} else {
+							cached_count++;
+						}
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
 							neighbouring_states[i].set_cost(cost, state_heuristic(neighbouring_states[i], target_state));

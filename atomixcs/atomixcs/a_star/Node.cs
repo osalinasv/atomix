@@ -22,7 +22,11 @@
 		}
 
 		public override int GetHashCode() {
-			return this.position.GetHashCode() * 23;
+			if (this.position != null) {
+				return this.position.GetHashCode() * 23;
+			} else {
+				return base.GetHashCode();
+			}
 		}
 
 		public override string ToString() {

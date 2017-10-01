@@ -3,29 +3,25 @@ using System.Collections.Generic;
 
 namespace atomixcs.a_star {
 	class Grid {
-		private int width;
-		private int height;
+		private int width = 0;
+		private int height = 0;
 		private Node[,] nodes;
-		public List<Vector2> walls;
-		private List<Vector2> directions;
 		private List<State> cached_states;
 
-		public Grid(int width, int height, List<Vector2> walls) {
+		private static readonly Vector2[] directions = new Vector2[] {
+			new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
+		};
+
+		public Grid(int width, int height, Vector2[] walls) {
 			this.width = width;
 			this.height = height;
-			this.walls = walls;
 
-			this.directions = new List<Vector2> {
-				new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
-			};
-
-			this.cached_states = new List<State>();
-
-			this.init_grid();
+			this.init_grid(walls);
 		}
 
-		public void init_grid() {
+		private void init_grid(Vector2[] walls) {
 			this.nodes = new Node[this.width, this.height];
+			this.cached_states = new List<State>();
 
 			bool is_walkable = true;
 			Vector2 position;
@@ -35,22 +31,22 @@ namespace atomixcs.a_star {
 			for (y = 0; y < this.height; y++) {
 				for (x = 0; x < this.width; x++) {
 					position = new Vector2(x, y);
-					is_walkable = !this.walls.Contains(position);
+					is_walkable = Array.IndexOf(walls, position) <= -1;
 
 					this.nodes[x, y] = new Node(x, y, is_walkable);
 				}
 			}
 		}
 
-		public bool is_position_in_bounds(Vector2 position) {
+		private bool is_position_in_bounds(Vector2 position) {
 			return 0 <= position.x && position.x < this.width && 0 <= position.y && position.y < this.height;
 		}
 
-		public bool is_node_walkable(Node node) {
+		private bool is_node_walkable(Node node) {
 			return node != null && node.is_walkable;
 		}
 
-		public Node get_node_from_position(Vector2 position) {
+		private Node get_node_from_position(Vector2 position) {
 			if (this.is_position_in_bounds(position)) {
 				return this.nodes[position.x, position.y];
 			} else {
@@ -58,17 +54,22 @@ namespace atomixcs.a_star {
 			}
 		}
 
-		public List<Node> get_nodes_from_positions(List<Vector2> positions) {
+		public List<Node> get_nodes_from_positions(Vector2[] positions) {
 			List<Node> nodes = new List<Node>();
+			Node node;
 
-			for (int i = 0; i < positions.Count; i++) {
-				nodes.Add(get_node_from_position(positions[i]));
+			for (int i = 0; i < positions.Length; i++) {
+				node = get_node_from_position(positions[i]);
+
+				if (node != null) {
+					nodes.Add(node);
+				}
 			}
 
 			return nodes;
 		}
 
-		public Node get_neighbour_in_direction(Node node, State current, Vector2 direction) {
+		private Node get_neighbour_in_direction(Node node, State current, Vector2 direction) {
 			Vector2 position = node.position + direction;
 
 			if (!this.is_position_in_bounds(position)) {
@@ -88,11 +89,11 @@ namespace atomixcs.a_star {
 			return neighbour;
 		}
 
-		public List<Node> get_neighbours(Node node, State current) {
+		private List<Node> get_neighbours(Node node, State current) {
 			List<Node> neighbours = new List<Node>();
 			Node neighbour = null;
 
-			for (int i = 0; i < this.directions.Count; i++) {
+			for (int i = 0; i < directions.Length; i++) {
 				neighbour = this.get_neighbour_in_direction(node, current, directions[i]);
 
 				if (neighbour != null) {
@@ -129,16 +130,12 @@ namespace atomixcs.a_star {
 							new_state = this.cached_states[index];
 						}
 					}
-					
+
 					if (index == -1) {
 						this.cached_states.Add(new_state);
 					}
 
 					neighbouring_states.Add(new_state);
-
-					if (target_state.Equals(new_state)) {
-						return neighbouring_states;
-					}
 				}
 			}
 
