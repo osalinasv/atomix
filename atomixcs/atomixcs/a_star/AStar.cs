@@ -21,7 +21,7 @@ namespace atomixcs.a_star {
 		static int state_heuristic(State current, State target) {
 			int heuristic = 0;
 
-			for (int i = 0; i < current.items.Count && i < target.items.Count; i++) {
+			for (int i = 0; i < current.items.Length && i < target.items.Length; i++) {
 				heuristic += manhattan_distance(current.items[i], target.items[i]);
 			}
 
@@ -50,16 +50,13 @@ namespace atomixcs.a_star {
 			SimplePriorityQueue<State, int> open_list = new SimplePriorityQueue<State, int>();
 			HashSet<State> closed_list = new HashSet<State>();
 
+			int cost;
+			bool is_in_open;
 			State current_state;
 			List<State> neighbouring_states;
 
-			int cost;
-			bool is_in_open;
-
 			/** For testing only. **/
 			int iteration_count = 0;
-			int cached_count = 0;
-			int new_count = 0;
 			Stopwatch watch = new Stopwatch();
 			/** For testing only. **/
 
@@ -77,27 +74,22 @@ namespace atomixcs.a_star {
 				if (current_state.Equals(target_state)) {
 					watch.Stop();
 
+					Console.WriteLine("\n\n==============================================\n");
+
 					Console.WriteLine("END state:");
 					grid.draw_grid(current_state);
 					Console.WriteLine(current_state);
 
 					Console.WriteLine("\nFinished in: {0} iterations | {1} ms", iteration_count, watch.ElapsedMilliseconds);
-					Console.WriteLine("Reused " + cached_count + " states and created " + new_count + " new states");
 					return reconstruct_path(current_state, start_state, target_state);
 				}
-
+				
 				neighbouring_states = grid.expand_state(current_state, target_state);
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!closed_list.Contains(neighbouring_states[i])) {
 						cost = current_state.cost + state_heuristic(neighbouring_states[i], current_state);
 						is_in_open = open_list.Contains(neighbouring_states[i]);
-
-						if (neighbouring_states[i].cost == 0) {
-							new_count++;
-						} else {
-							cached_count++;
-						}
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
 							neighbouring_states[i].set_cost(cost, state_heuristic(neighbouring_states[i], target_state));
@@ -109,6 +101,10 @@ namespace atomixcs.a_star {
 						}
 					}
 				}
+
+				watch.Stop();
+				Console.Write("\relapsed: {0} | iterations: {1} | heuristic: {2} | f-cost: {3}      ", watch.ElapsedMilliseconds, iteration_count, current_state.heuristic, current_state.f_cost);
+				watch.Start();
 			}
 
 			watch.Stop();

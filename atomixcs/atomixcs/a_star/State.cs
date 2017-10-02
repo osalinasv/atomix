@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-
-namespace atomixcs.a_star {
+﻿namespace atomixcs.a_star {
 	class State {
-		public List<Node> items;
 		public int cost;
 		public int heuristic;
 		public int f_cost;
-		public State previous;
+		public Node[] items;
+		public State previous = null;
 
-		public State(List<Node> items) {
+		public State(Node[] items) {
 			this.items = items;
 		}
 
@@ -28,15 +26,15 @@ namespace atomixcs.a_star {
 				return false;
 			}
 
-			if (this.items == null || this.items.Count <= 0) {
-				if (other.items == null || this.items.Count <= 0) {
+			if (this.items == null || this.items.Length <= 0) {
+				if (other.items == null || this.items.Length <= 0) {
 					return true;
 				} else {
 					return false;
 				}
 			}
 
-			for (int i = 0; i < this.items.Count && i < other.items.Count; i++) {
+			for (int i = 0; i < this.items.Length && i < other.items.Length; i++) {
 				if (!this.items[i].Equals(other.items[i])) {
 					return false;
 				}
@@ -48,8 +46,8 @@ namespace atomixcs.a_star {
 		public override int GetHashCode() {
 			int hash = 0;
 
-			if (this.items != null && this.items.Count > 0) {
-				for (int i = 0; i < this.items.Count; i++) {
+			if (this.items != null && this.items.Length > 0) {
+				for (int i = 0; i < this.items.Length; i++) {
 					hash += this.items[i].GetHashCode() * 23;
 				}
 			} else {
@@ -62,10 +60,10 @@ namespace atomixcs.a_star {
 		public override string ToString() {
 			string str = "S[";
 
-			for (int i = 0; i < this.items.Count; i++) {
+			for (int i = 0; i < this.items.Length; i++) {
 				str += this.items[i].ToString();
 
-				if (i < this.items.Count - 1) {
+				if (i < this.items.Length - 1) {
 					str += ", ";
 				}
 			}

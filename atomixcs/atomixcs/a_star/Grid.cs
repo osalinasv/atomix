@@ -6,17 +6,22 @@ namespace atomixcs.a_star {
 		private int width = 0;
 		private int height = 0;
 		private Node[,] nodes;
+		public State start_state;
+		public State target_state;
 		private List<State> cached_states;
 
 		private static readonly Vector2[] directions = new Vector2[] {
 			new Vector2(1, 0), new Vector2(0, -1), new Vector2(-1, 0), new Vector2(0, 1)
 		};
 
-		public Grid(int width, int height, Vector2[] walls) {
+		public Grid(int width, int height, Vector2[] walls, Vector2[] start_positions, Vector2[] target_positions) {
 			this.width = width;
 			this.height = height;
 
 			this.init_grid(walls);
+
+			this.start_state = new State(this.get_nodes_from_positions(start_positions));
+			this.target_state = new State(this.get_nodes_from_positions(target_positions));
 		}
 
 		private void init_grid(Vector2[] walls) {
@@ -54,7 +59,7 @@ namespace atomixcs.a_star {
 			}
 		}
 
-		public List<Node> get_nodes_from_positions(Vector2[] positions) {
+		public Node[] get_nodes_from_positions(Vector2[] positions) {
 			List<Node> nodes = new List<Node>();
 			Node node;
 
@@ -66,7 +71,7 @@ namespace atomixcs.a_star {
 				}
 			}
 
-			return nodes;
+			return nodes.ToArray();
 		}
 
 		private Node get_neighbour_in_direction(Node node, State current, Vector2 direction) {
@@ -79,7 +84,7 @@ namespace atomixcs.a_star {
 			Node neighbour = null;
 			Node next_neighbour = this.nodes[position.x, position.y];
 
-			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour) && !current.items.Contains(next_neighbour)) {
+			while (this.is_position_in_bounds(position) && this.is_node_walkable(next_neighbour) && Array.IndexOf(current.items, next_neighbour) <= -1) {
 				neighbour = next_neighbour;
 				next_neighbour = this.nodes[position.x, position.y];
 
@@ -109,16 +114,15 @@ namespace atomixcs.a_star {
 			List<Node> neighbours;
 
 			State new_state = null;
-			List<Node> items;
+			Node[] items;
 			int i, j, index;
 
-			for (i = 0; i < current.items.Count; i++) {
+			for (i = 0; i < current.items.Length; i++) {
 				neighbours = get_neighbours(current.items[i], current);
 
 				for (j = 0; j < neighbours.Count; j++) {
-					items = new List<Node>(current.items) {
-						[i] = neighbours[j]
-					};
+					items = (Node[]) current.items.Clone();
+					items[i] = neighbours[j];
 
 					new_state = new State(items);
 					index = -1;
@@ -150,7 +154,7 @@ namespace atomixcs.a_star {
 			int i, x, y;
 
 			List<Vector2> positions = new List<Vector2>();
-			for (i = 0; i < current_state.items.Count; i++) {
+			for (i = 0; i < current_state.items.Length; i++) {
 				positions.Add(current_state.items[i].position);
 			}
 
