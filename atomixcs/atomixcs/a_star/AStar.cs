@@ -46,7 +46,7 @@ namespace atomixcs.a_star {
 			return path;
 		}
 
-		public static List<State> a_star(Grid grid, State start_state, State target_state) {
+		public static List<State> a_star(ref Grid grid, State start_state, State target_state) {
 			SimplePriorityQueue<State, int> open_list = new SimplePriorityQueue<State, int>();
 			HashSet<State> closed_list = new HashSet<State>();
 
@@ -78,7 +78,6 @@ namespace atomixcs.a_star {
 
 					Console.WriteLine("END state:");
 					grid.draw_grid(current_state);
-					Console.WriteLine(current_state);
 
 					Console.WriteLine("\nFinished in: {0} iterations | {1} ms", iteration_count, watch.ElapsedMilliseconds);
 					return reconstruct_path(current_state, start_state, target_state);
