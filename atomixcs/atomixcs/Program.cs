@@ -1,50 +1,73 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Drawing;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 using atomixcs.a_star;
 
 namespace atomixcs {
-	struct XMLLevel {
-		public string name;
-		public string path;
-		public Color[] colors;
+	public struct XMLColor {
+		[XmlIgnore]
+		public Color color;
+		[XmlAttribute("hex")]
+		public string color_string {
+			get {
+				return this.color.ToString();
+			}
+			set {
+				this.color = ColorTranslator.FromHtml(value);
+			}
+		}
 
-		public XMLLevel(string name, string path, Color[] colors) {
+		public static implicit operator Color(XMLColor color) {
+			return color.color;
+		}
+	}
+
+	public struct XMLLevel {
+		[XmlElement(DataType = "string", ElementName = "name")]
+		public string name;
+		[XmlElement(DataType = "string", ElementName = "path")]
+		public string path;
+		[XmlArray("colors"), XmlArrayItem("color")]
+		public XMLColor[] colors;
+
+		public XMLLevel(string name, string path, XMLColor[] colors) {
 			this.name = name;
 			this.path = path;
 			this.colors = colors;
 		}
+
+		public Color[] get_color_array() {
+			return Array.ConvertAll<XMLColor, Color>(this.colors, (XMLColor color) => { return color.color; });
+		}
+	}
+
+	[XmlRoot("levels")]
+	public struct XMLLevelList {
+		[XmlElement("level")]
+		public List<XMLLevel> levels;
 	}
 
 	class Program {
 		static void Main(string[] args) {
+			/** General initializations **/
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
 			Console.WriteLine("A* Atomix\n");
 
 			string root = AppContext.BaseDirectory;
 			string data_dir = root + "data/";
 
-			/**
-			 * Serialize the data/data.xml and create a new XMLLevel object for each level tag, fill
-			 * path with the string inside the path tag and create a color array based on each of the color tags inside
-			 * the colors tag.
-			 **/
-			List<XMLLevel> levels = new List<XMLLevel>() {
-				new XMLLevel("Level 01", "level-01/", new Color[] {
-					Color.FromArgb(0, 0, 255),
-					Color.FromArgb(0, 255, 255),
-					Color.FromArgb(255, 0, 0),
-				}),
-				new XMLLevel("Level 02", "level-02/", new Color[] {
-					Color.FromArgb(0, 0, 255),
-					Color.FromArgb(0, 255, 255),
-					Color.FromArgb(255, 0, 0),
-					Color.FromArgb(255, 255, 0),
-					Color.FromArgb(0, 255, 0),
-				}),
-			};
+			/** Read and deserialize level XML data **/
+			List<XMLLevel> levels = read_level_data(data_dir + "data.xml");
 
+			if (levels == null || levels.Count <= 0) {
+				Console.WriteLine("No levels were found or there is a problem with data.xml");
+				return;
+			}
+
+			/** Level selection **/
 			int selected_level = 0;
 
 			Console.WriteLine("Level selection.");
@@ -57,8 +80,14 @@ namespace atomixcs {
 			selected_level = int.Parse(Console.ReadLine()) - 1;
 			Console.WriteLine();
 
+			if (selected_level < 0 || selected_level >= levels.Count) {
+				Console.WriteLine("Invalid level number");
+				return;
+			}
+
+			/** Base grid and states creation **/
 			string level_path = data_dir + levels[selected_level].path;
-			Color[] level_colors = levels[selected_level].colors;
+			Color[] level_colors = levels[selected_level].get_color_array();
 
 			Grid grid = grid_from_images(level_path + "diagram.png", level_path + "solution.png", level_colors);
 
@@ -70,6 +99,7 @@ namespace atomixcs {
 			grid.draw_grid(grid.target_state);
 			Console.WriteLine();
 
+			/** A* solution path search **/
 			List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
 
 			if (path != null && path.Count > 0) {
@@ -88,6 +118,18 @@ namespace atomixcs {
 			}
 
 			Console.ReadLine();
+		}
+
+		static List<XMLLevel> read_level_data(string path) {
+			XmlSerializer serializer = new XmlSerializer(typeof(XMLLevelList));
+			List<XMLLevel> levels = null;
+
+			using (StreamReader writter = new StreamReader(path)) {
+				XMLLevelList level_list = (XMLLevelList)serializer.Deserialize(writter);
+				levels = level_list.levels;
+			}
+
+			return levels;
 		}
 
 		static Vector2[] get_walls_from_image(Bitmap image) {

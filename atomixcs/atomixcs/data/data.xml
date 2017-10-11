@@ -1,22 +1,23 @@
+<?xml version="1.0"?>
 <levels>
-	<level>
-    <name>"Level 01"</name>
-		<path>"level-01/"</path>
-		<colors>
-			<color r="0" g="0" b="255"></color>
-			<color r="0" g="255" b="255"></color>
-			<color r="255" g="0" b="0"></color>
-		</colors>
-	</level>
-	<level>
-    <name>"Level 02"</name>
-		<path>"level-02/"</path>
-		<colors>
-			<color r="0" g="0" b="255"></color>
-			<color r="0" g="255" b="255"></color>
-			<color r="255" g="0" b="0"></color>
-			<color r="255" g="255" b="0"></color>
-			<color r="0" g="0" b="0"></color>
-		</colors>
-	</level>
+  <level>
+    <name>Level 01</name>
+    <path>level-01/</path>
+    <colors>
+      <color hex="#0000ff"></color>
+      <color hex="#00ffff"></color>
+      <color hex="#ff0000"></color>
+    </colors>
+  </level>
+  <level>
+    <name>Level 02</name>
+    <path>level-02/</path>
+    <colors>
+      <color hex="#0000ff"></color>
+      <color hex="#00ffff"></color>
+      <color hex="#ff0000"></color>
+      <color hex="#ffff00"></color>
+      <color hex="#00ff00"></color>
+    </colors>
+  </level>
 </levels>
