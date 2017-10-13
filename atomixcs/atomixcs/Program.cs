@@ -67,57 +67,92 @@ namespace atomixcs {
 				return;
 			}
 
-			/** Level selection **/
-			int selected_level = 0;
+			/** Level selection loop **/
+			int selected_level;
+			int numeric;
+			bool should_exit;
+			bool is_numeric;
+			string level_path;
+			string input;
+			Color[] level_colors;
+			Grid grid;
 
-			Console.WriteLine("Level selection.");
+			while (true) {
+				Console.Clear();
+				Console.WriteLine("Level selection.");
 
-			for (int i = 0; i < levels.Count; i++) {
-				Console.WriteLine("{0}. {1}", i + 1, levels[i].name);
-			}
-
-			Console.Write("\nSelect level [1-{0}]: ", levels.Count);
-			selected_level = int.Parse(Console.ReadLine()) - 1;
-			Console.WriteLine();
-
-			if (selected_level < 0 || selected_level >= levels.Count) {
-				Console.WriteLine("Invalid level number");
-				return;
-			}
-
-			/** Base grid and states creation **/
-			string level_path = data_dir + levels[selected_level].path;
-			Color[] level_colors = levels[selected_level].get_color_array();
-
-			Grid grid = grid_from_images(level_path + "diagram.png", level_path + "solution.png", level_colors);
-
-			Console.WriteLine("START state:");
-			grid.draw_grid(grid.start_state);
-			Console.WriteLine();
-
-			Console.WriteLine("TARGET state:");
-			grid.draw_grid(grid.target_state);
-			Console.WriteLine();
-
-			/** A* solution path search **/
-			List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
-
-			if (path != null && path.Count > 0) {
-				Console.ReadLine();
-				Console.WriteLine("PATH:\n");
-
-				foreach (State state in path) {
-					grid.draw_grid(state);
-					Console.WriteLine(state);
-					Console.WriteLine();
+				for (int i = 0; i < levels.Count; i++) {
+					Console.WriteLine("{0}. {1}", i + 1, levels[i].name);
 				}
 
-				Console.WriteLine("Solved in: " + (path.Count - 1) + " steps.");
-			} else {
-				Console.WriteLine("No solution found");
-			}
+				Console.WriteLine("{0}. Exit", levels.Count + 1);
 
-			Console.ReadLine();
+				Console.Write("\nSelect level [1-{0}] (or type exit): ", levels.Count);
+				input = Console.ReadLine();
+				Console.WriteLine();
+
+				should_exit = false;
+
+				if (input.Equals("exit")) {
+					should_exit = true;
+				} else {
+					is_numeric = int.TryParse(input, out numeric);
+
+					if (!is_numeric) {
+						Console.WriteLine("Invalid level input");
+					} else {
+						selected_level = int.Parse(input) - 1;
+
+						if (selected_level < 0 || selected_level >= levels.Count) {
+							if (selected_level == levels.Count) {
+								should_exit = true;
+							} else {
+								Console.WriteLine("Invalid level number");
+							}
+						} else {
+							/** Base grid and states creation **/
+							level_path = data_dir + levels[selected_level].path;
+							level_colors = levels[selected_level].get_color_array();
+
+							Console.Clear();
+							Console.WriteLine("{0}\n", levels[selected_level].name);
+							grid = grid_from_images(level_path + "diagram.png", level_path + "solution.png", level_colors);
+
+							Console.WriteLine("START state:");
+							grid.draw_grid(grid.start_state);
+							Console.WriteLine();
+
+							Console.WriteLine("TARGET state:");
+							grid.draw_grid(grid.target_state);
+							Console.WriteLine();
+
+							/** A* solution path search **/
+							List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
+
+							if (path != null && path.Count > 0) {
+								Console.ReadLine();
+								Console.WriteLine("PATH:\n");
+
+								foreach (State state in path) {
+									grid.draw_grid(state);
+									Console.WriteLine(state);
+									Console.WriteLine();
+								}
+
+								Console.WriteLine("Solved in: " + (path.Count - 1) + " steps.");
+							} else {
+								Console.WriteLine("No solution found");
+							}
+
+							Console.ReadLine();
+						}
+					}
+				}
+
+				if (should_exit) {
+					return;
+				}
+			}
 		}
 
 		static List<XMLLevel> read_level_data(string path) {
