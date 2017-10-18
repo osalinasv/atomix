@@ -54,8 +54,7 @@ namespace atomixcs {
 		static void Main(string[] args) {
 			/** General initializations **/
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
-			Console.WriteLine("A* Atomix\n");
-
+			
 			string root = AppContext.BaseDirectory;
 			string data_dir = root + "data/";
 
@@ -79,6 +78,7 @@ namespace atomixcs {
 
 			while (true) {
 				Console.Clear();
+				Console.WriteLine("A* Atomix\n");
 				Console.WriteLine("Level selection.");
 
 				for (int i = 0; i < levels.Count; i++) {
@@ -128,23 +128,7 @@ namespace atomixcs {
 
 							/** A* solution path search **/
 							List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
-
-							if (path != null && path.Count > 0) {
-								Console.ReadLine();
-								Console.WriteLine("PATH:\n");
-
-								foreach (State state in path) {
-									grid.draw_grid(state);
-									Console.WriteLine(state);
-									Console.WriteLine();
-								}
-
-								Console.WriteLine("Solved in: " + (path.Count - 1) + " steps.");
-							} else {
-								Console.WriteLine("No solution found");
-							}
-
-							Console.ReadLine();
+							display_path(ref grid, ref path);
 						}
 					}
 				}
@@ -219,6 +203,30 @@ namespace atomixcs {
 			Vector2[] target_positions = get_atoms_from_image(solution, pixels);
 
 			return new Grid(width, height, wall_positions, start_positions, target_positions);
+		}
+
+		static void display_path(ref Grid grid, ref List<State> path) {
+			int console_line_start;
+
+			if (path != null && path.Count > 0) {
+				Console.WriteLine("\n\nPATH:");
+				Console.WriteLine("Solved in " + (path.Count - 1) + " steps.\n");
+
+				console_line_start = Console.CursorTop;
+
+				for (int i = 0; i < path.Count; i++) {
+					Console.CursorTop = console_line_start;
+
+					grid.draw_grid(path[i]);
+					Console.WriteLine(path[i]);
+					Console.WriteLine();
+
+					Console.WriteLine("Press enter to " + ((i >= path.Count - 1) ? "end".PadRight(Console.WindowWidth) : "continue..."));
+					Console.ReadLine();
+				}
+			} else {
+				Console.WriteLine("No solution found");
+			}
 		}
 	}
 }

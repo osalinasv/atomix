@@ -167,16 +167,21 @@ namespace atomixcs.a_star {
 					} else {
 						index = positions.IndexOf(node.position);
 
-						if (index == 0) {
-							character = 'C';
-						} else if (index > 0) {
-							character = 'H';
+						if (index == 0 || index > 0) {
+							if (index == 0) {
+								Console.ForegroundColor = ConsoleColor.Cyan;
+								character = 'C';
+							} else {
+								Console.ForegroundColor = ConsoleColor.Green;
+								character = 'H';
+							}
 						} else {
 							character = ' ';
 						}
 					}
 
 					Console.Write("{0} ", character);
+					Console.ResetColor();
 				}
 
 				Console.WriteLine();
