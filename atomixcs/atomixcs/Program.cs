@@ -55,14 +55,14 @@ namespace atomixcs {
 			/** General initializations **/
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
 			
-			string root = AppContext.BaseDirectory;
-			string data_dir = root + "data/";
+			string data_dir = AppContext.BaseDirectory + "data/";
 
 			/** Read and deserialize level XML data **/
 			List<XMLLevel> levels = read_level_data(data_dir + "data.xml");
 
 			if (levels == null || levels.Count <= 0) {
 				Console.WriteLine("No levels were found or there is a problem with data.xml");
+				Console.ReadLine();
 				return;
 			}
 
@@ -214,16 +214,37 @@ namespace atomixcs {
 
 				console_line_start = Console.CursorTop;
 
-				for (int i = 0; i < path.Count; i++) {
+				int i = 0;
+				ConsoleKey key_pressed;
+
+				Console.CursorVisible = false;
+
+				while (i >= 0 && i < path.Count) {
 					Console.CursorTop = console_line_start;
 
 					grid.draw_grid(path[i]);
-					Console.WriteLine(path[i]);
+					Console.WriteLine("{0}. {1}      ", (i <= 0) ? "start" : i.ToString(), path[i]);
 					Console.WriteLine();
 
-					Console.WriteLine("Press enter to " + ((i >= path.Count - 1) ? "end".PadRight(Console.WindowWidth) : "continue..."));
-					Console.ReadLine();
+					Console.WriteLine("Press \u2190 or \u2192 arrows to navigate...");
+					if (i >= path.Count) {
+						break;
+					}
+
+					if (Console.KeyAvailable) {
+						key_pressed = Console.ReadKey(false).Key;
+
+						if (key_pressed == ConsoleKey.LeftArrow) {
+							i--;
+						} else if(key_pressed == ConsoleKey.RightArrow) {
+							i++;
+						}
+
+						i = Math.Min(Math.Max(0, i), path.Count);
+					}
 				}
+
+				Console.CursorVisible = true;
 			} else {
 				Console.WriteLine("No solution found");
 			}

@@ -102,7 +102,21 @@ namespace atomixcs.a_star {
 				}
 
 				watch.Stop();
-				Console.Write("\relapsed: {0} | iterations: {1} | heuristic: {2} | f-cost: {3}      ", watch.ElapsedMilliseconds, iteration_count, current_state.heuristic, current_state.f_cost);
+
+				string time_tag = "ms";
+				float time = watch.ElapsedMilliseconds;
+
+				if (time >= 1000) {
+					time /= 1000;
+					time_tag = "s";
+
+					if (time >= 60) {
+						time /= 60;
+						time_tag = "m";
+					}
+				}
+
+				Console.Write("\relapsed: {0} {1} | iterations: {2} | heuristic: {3} | f-cost: {4}      ", watch.ElapsedMilliseconds, time_tag, iteration_count, current_state.heuristic, current_state.f_cost);
 				watch.Start();
 			}
 
