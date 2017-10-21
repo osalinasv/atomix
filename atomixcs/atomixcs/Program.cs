@@ -54,6 +54,7 @@ namespace atomixcs {
 		static void Main(string[] args) {
 			/** General initializations **/
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
+			Console.CursorVisible = false;
 
 			string data_dir = AppContext.BaseDirectory + "data/";
 
@@ -178,8 +179,6 @@ namespace atomixcs {
 			console_line_start = Console.CursorTop;
 			console_char_start = Console.CursorLeft;
 
-			Console.CursorVisible = false;
-
 			while (!enter_pressed) {
 				Console.CursorTop = console_line_start;
 				Console.CursorLeft = console_char_start;
@@ -213,7 +212,6 @@ namespace atomixcs {
 					key_pressed = Console.ReadKey(false).Key;
 
 					if (key_pressed == ConsoleKey.Enter) {
-						Console.CursorVisible = true;
 						return;
 					} else if (key_pressed == ConsoleKey.UpArrow) {
 						selected_level--;
@@ -224,8 +222,6 @@ namespace atomixcs {
 					selected_level = Math.Min(Math.Max(0, selected_level), levels.Count);
 				}
 			}
-
-			Console.CursorVisible = true;
 		}
 
 		static void display_path(ref Grid grid, ref List<State> path) {
@@ -239,8 +235,6 @@ namespace atomixcs {
 
 				int i = 0;
 				ConsoleKey key_pressed;
-
-				Console.CursorVisible = false;
 
 				while (i >= 0 && i < path.Count) {
 					Console.CursorTop = console_line_start;
@@ -266,10 +260,10 @@ namespace atomixcs {
 						i = Math.Min(Math.Max(0, i), path.Count);
 					}
 				}
-
-				Console.CursorVisible = true;
 			} else {
 				Console.WriteLine("No solution found");
+				Console.WriteLine("Press Enter to return to menu");
+				Console.ReadLine();
 			}
 		}
 	}

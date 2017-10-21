@@ -109,7 +109,7 @@ namespace atomixcs.a_star {
 			return neighbours;
 		}
 
-		public List<State> expand_state(State current, State target_state) {
+		public List<State> expand_state(State current) {
 			List<State> neighbouring_states = new List<State>();
 			List<Node> neighbours;
 
@@ -158,6 +158,15 @@ namespace atomixcs.a_star {
 				positions.Add(current_state.items[i].position);
 			}
 
+			int color_index = 0;
+
+			ConsoleColor[] colors = {
+				ConsoleColor.Magenta,
+				ConsoleColor.Red,
+				ConsoleColor.Yellow,
+				ConsoleColor.Green
+			};
+
 			for (y = 0; y < this.height; y++) {
 				for (x = 0; x < this.width; x++) {
 					node = this.nodes[x, y];
@@ -172,7 +181,9 @@ namespace atomixcs.a_star {
 								Console.ForegroundColor = ConsoleColor.Cyan;
 								character = 'C';
 							} else {
-								Console.ForegroundColor = ConsoleColor.Green;
+								Console.ForegroundColor = colors[color_index];
+								color_index++;
+
 								character = 'H';
 							}
 						} else {

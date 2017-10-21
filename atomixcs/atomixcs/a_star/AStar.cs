@@ -10,14 +10,6 @@ namespace atomixcs.a_star {
 			return Math.Abs(a.position.x - b.position.x) + Math.Abs(a.position.y - b.position.y);
 		}
 
-		/**
-		 * @Optimization: what would be a way of differentiating a closer to solved state from an unsolved/unoptimal state
-		 * represented just by a real number?
-		 * 
-		 * Adding the distance between the atoms themselves hindered the results in more cases than those in which it did help,
-		 * considering how close are the atoms from each other made the algorithm prefer paths that led to grouping the atoms
-		 * disregarding if they are actually close to the goal.
-		 **/
 		static int state_heuristic(State current, State target) {
 			int heuristic = 0;
 
@@ -28,11 +20,50 @@ namespace atomixcs.a_star {
 			return heuristic;
 		}
 
+		static int state_difference_target(State current, State target) {
+			int heuristic = 0;
+			Node first_current = current.items[0];
+			Node first_target = target.items[0];
+
+			Vector2 distance_current;
+			Vector2 distance_target;
+
+			for (int i = 1; i < current.items.Length && i < target.items.Length; i++) {
+				distance_current = first_current.position - current.items[i].position;
+				distance_target = first_target.position - target.items[i].position;
+
+				if (distance_current != distance_target) {
+					heuristic += manhattan_distance(current.items[i], target.items[i]);
+				}
+			}
+
+			return heuristic;
+		}
+
+		static bool compare_to_target(State current, State target) {
+			Node first_current = current.items[0];
+			Node first_target = target.items[0];
+
+			Vector2 distance_current;
+			Vector2 distance_target;
+
+			for (int i = 1; i < current.items.Length && i < target.items.Length; i++) {
+				distance_current = first_current.position - current.items[i].position;
+				distance_target = first_target.position - target.items[i].position;
+
+				if (distance_current != distance_target) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		static List<State> reconstruct_path(State current_state, State start_state, State target_state) {
 			List<State> path = new List<State>();
 			State current = current_state;
 
-			if (current_state.Equals(target_state)) {
+			if (compare_to_target(current_state, target_state)) {
 				while (current != null) {
 					path.Add(current);
 					current = current.previous;
@@ -62,7 +93,7 @@ namespace atomixcs.a_star {
 
 			watch.Start();
 
-			start_state.set_cost(0, state_heuristic(start_state, target_state));
+			start_state.set_cost(0, state_difference_target(start_state, target_state));
 			open_list.Enqueue(start_state, start_state.f_cost);
 
 			while (open_list.Count > 0) {
@@ -71,7 +102,7 @@ namespace atomixcs.a_star {
 				current_state = open_list.Dequeue();
 				closed_list.Add(current_state);
 
-				if (current_state.Equals(target_state)) {
+				if (compare_to_target(current_state, target_state)) {
 					watch.Stop();
 
 					Console.WriteLine("\n\n==============================================\n");
@@ -83,7 +114,7 @@ namespace atomixcs.a_star {
 					return reconstruct_path(current_state, start_state, target_state);
 				}
 				
-				neighbouring_states = grid.expand_state(current_state, target_state);
+				neighbouring_states = grid.expand_state(current_state);
 
 				for (int i = 0; i < neighbouring_states.Count; i++) {
 					if (!closed_list.Contains(neighbouring_states[i])) {
@@ -91,7 +122,7 @@ namespace atomixcs.a_star {
 						is_in_open = open_list.Contains(neighbouring_states[i]);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							neighbouring_states[i].set_cost(cost, state_heuristic(neighbouring_states[i], target_state));
+							neighbouring_states[i].set_cost(cost, state_difference_target(neighbouring_states[i], target_state));
 							neighbouring_states[i].previous = current_state;
 
 							if (!is_in_open) {
