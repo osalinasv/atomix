@@ -12,29 +12,21 @@ namespace atomixcs.a_star {
 
 		static int state_heuristic(State current, State target) {
 			int heuristic = 0;
-
-			for (int i = 0; i < current.items.Length && i < target.items.Length; i++) {
-				heuristic += manhattan_distance(current.items[i], target.items[i]);
-			}
-
-			return heuristic;
-		}
-
-		static int state_difference_target(State current, State target) {
-			int heuristic = 0;
 			Node first_current = current.items[0];
 			Node first_target = target.items[0];
 
 			Vector2 distance_current;
 			Vector2 distance_target;
+			Vector2 difference;
+
+			heuristic += manhattan_distance(first_current, first_target);
 
 			for (int i = 1; i < current.items.Length && i < target.items.Length; i++) {
 				distance_current = first_current.position - current.items[i].position;
 				distance_target = first_target.position - target.items[i].position;
 
-				if (distance_current != distance_target) {
-					heuristic += manhattan_distance(current.items[i], target.items[i]);
-				}
+				difference = distance_target - distance_current;
+				heuristic += Math.Abs(difference.x) + Math.Abs(difference.y);
 			}
 
 			return heuristic;
@@ -93,7 +85,7 @@ namespace atomixcs.a_star {
 
 			watch.Start();
 
-			start_state.set_cost(0, state_difference_target(start_state, target_state));
+			start_state.set_cost(0, state_heuristic(start_state, target_state));
 			open_list.Enqueue(start_state, start_state.f_cost);
 
 			while (open_list.Count > 0) {
@@ -122,7 +114,7 @@ namespace atomixcs.a_star {
 						is_in_open = open_list.Contains(neighbouring_states[i]);
 
 						if (cost < neighbouring_states[i].cost || !is_in_open) {
-							neighbouring_states[i].set_cost(cost, state_difference_target(neighbouring_states[i], target_state));
+							neighbouring_states[i].set_cost(cost, state_heuristic(neighbouring_states[i], target_state));
 							neighbouring_states[i].previous = current_state;
 
 							if (!is_in_open) {
@@ -147,7 +139,7 @@ namespace atomixcs.a_star {
 					}
 				}
 
-				Console.Write("\relapsed: {0} {1} | iterations: {2} | heuristic: {3} | f-cost: {4}      ", watch.ElapsedMilliseconds, time_tag, iteration_count, current_state.heuristic, current_state.f_cost);
+				Console.Write("\relapsed: {0} {1} | iterations: {2} | heuristic: {3} | f-cost: {4}      ", time, time_tag, iteration_count, current_state.heuristic, current_state.f_cost);
 				watch.Start();
 			}
 
