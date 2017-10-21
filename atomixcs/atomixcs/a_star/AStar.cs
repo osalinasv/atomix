@@ -69,6 +69,16 @@ namespace atomixcs.a_star {
 			return path;
 		}
 
+		static string format_time(float milliseconds) {
+			int y = 60 * 60 * 1000;
+			int h = (int) (milliseconds / y);
+			int m = (int) ((milliseconds - (h * y)) / (y / 60));
+			int s = (int) ((milliseconds - (h * y) - (m * (y / 60))) / 1000);
+			int mi = (int) (milliseconds - (h * y) - (m * (y / 60)) - (s * 1000));
+
+			return h.ToString("00") + ":" + m.ToString("00") + ":" + s.ToString("00") + ":" + mi.ToString("000");
+		}
+
 		public static List<State> a_star(ref Grid grid, State start_state, State target_state) {
 			SimplePriorityQueue<State, int> open_list = new SimplePriorityQueue<State, int>();
 			HashSet<State> closed_list = new HashSet<State>();
@@ -102,7 +112,7 @@ namespace atomixcs.a_star {
 					Console.WriteLine("END state:");
 					grid.draw_grid(current_state);
 
-					Console.WriteLine("\nFinished in: {0} iterations | {1} ms", iteration_count, watch.ElapsedMilliseconds);
+					Console.WriteLine("\nFinished in: {0} iterations | {1}", iteration_count, format_time(watch.ElapsedMilliseconds));
 					return reconstruct_path(current_state, start_state, target_state);
 				}
 				
@@ -126,20 +136,7 @@ namespace atomixcs.a_star {
 
 				watch.Stop();
 
-				string time_tag = "ms";
-				float time = watch.ElapsedMilliseconds;
-
-				if (time >= 1000) {
-					time /= 1000;
-					time_tag = "s";
-
-					if (time >= 60) {
-						time /= 60;
-						time_tag = "m";
-					}
-				}
-
-				Console.Write("\relapsed: {0} {1} | iterations: {2} | heuristic: {3} | f-cost: {4}      ", time, time_tag, iteration_count, current_state.heuristic, current_state.f_cost);
+				Console.Write("\relapsed: {0} | iterations: {1} | heuristic: {2} | f-cost: {3}      ", format_time(watch.ElapsedMilliseconds), iteration_count, current_state.heuristic, current_state.f_cost);
 				watch.Start();
 			}
 
