@@ -54,7 +54,7 @@ namespace atomixcs {
 		static void Main(string[] args) {
 			/** General initializations **/
 			Console.OutputEncoding = System.Text.Encoding.UTF8;
-			
+
 			string data_dir = AppContext.BaseDirectory + "data/";
 
 			/** Read and deserialize level XML data **/
@@ -68,73 +68,36 @@ namespace atomixcs {
 
 			/** Level selection loop **/
 			int selected_level;
-			int numeric;
-			bool should_exit;
-			bool is_numeric;
 			string level_path;
-			string input;
 			Color[] level_colors;
 			Grid grid;
 
 			while (true) {
-				Console.Clear();
-				Console.WriteLine("A* Atomix\n");
-				Console.WriteLine("Level selection.");
+				selected_level = 0;
+				display_menu(ref levels, ref selected_level);
 
-				for (int i = 0; i < levels.Count; i++) {
-					Console.WriteLine("{0}. {1}", i + 1, levels[i].name);
-				}
-
-				Console.WriteLine("{0}. Exit", levels.Count + 1);
-
-				Console.Write("\nSelect level [1-{0}] (or type exit): ", levels.Count);
-				input = Console.ReadLine();
-				Console.WriteLine();
-
-				should_exit = false;
-
-				if (input.Equals("exit")) {
-					should_exit = true;
-				} else {
-					is_numeric = int.TryParse(input, out numeric);
-
-					if (!is_numeric) {
-						Console.WriteLine("Invalid level input");
-					} else {
-						selected_level = int.Parse(input) - 1;
-
-						if (selected_level < 0 || selected_level >= levels.Count) {
-							if (selected_level == levels.Count) {
-								should_exit = true;
-							} else {
-								Console.WriteLine("Invalid level number");
-							}
-						} else {
-							/** Base grid and states creation **/
-							level_path = data_dir + levels[selected_level].path;
-							level_colors = levels[selected_level].get_color_array();
-
-							Console.Clear();
-							Console.WriteLine("{0}\n", levels[selected_level].name);
-							grid = grid_from_images(level_path + "diagram.png", level_path + "solution.png", level_colors);
-
-							Console.WriteLine("START state:");
-							grid.draw_grid(grid.start_state);
-							Console.WriteLine();
-
-							Console.WriteLine("TARGET state:");
-							grid.draw_grid(grid.target_state);
-							Console.WriteLine();
-
-							/** A* solution path search **/
-							List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
-							display_path(ref grid, ref path);
-						}
-					}
-				}
-
-				if (should_exit) {
+				if (selected_level < 0 || selected_level >= levels.Count) {
 					return;
+				} else {
+					/** Base grid and states creation **/
+					level_path = data_dir + levels[selected_level].path;
+					level_colors = levels[selected_level].get_color_array();
+
+					Console.Clear();
+					Console.WriteLine("{0}\n", levels[selected_level].name);
+					grid = grid_from_images(level_path + "diagram.png", level_path + "solution.png", level_colors);
+
+					Console.WriteLine("START state:");
+					grid.draw_grid(grid.start_state);
+					Console.WriteLine();
+
+					Console.WriteLine("TARGET state:");
+					grid.draw_grid(grid.target_state);
+					Console.WriteLine();
+
+					/** A* solution path search **/
+					List<State> path = AStar.a_star(ref grid, grid.start_state, grid.target_state);
+					display_path(ref grid, ref path);
 				}
 			}
 		}
@@ -205,6 +168,66 @@ namespace atomixcs {
 			return new Grid(width, height, wall_positions, start_positions, target_positions);
 		}
 
+		static void display_menu(ref List<XMLLevel> levels, ref int selected_level) {
+			int console_line_start;
+			int console_char_start;
+			bool enter_pressed = false;
+			ConsoleKey key_pressed;
+
+			Console.Clear();
+			console_line_start = Console.CursorTop;
+			console_char_start = Console.CursorLeft;
+
+			Console.CursorVisible = false;
+
+			while (!enter_pressed) {
+				Console.CursorTop = console_line_start;
+				Console.CursorLeft = console_char_start;
+				Console.ResetColor();
+
+				Console.WriteLine("   __           __    ____  _____  __  __  ____  _  _ \n  /__\\  \\|/    /__\\  (_  _)(  _  )(  \\/  )(_  _)( \\/ )\n /(__)\\ /|\\   /(__)\\   )(   )(_)(  )    (  _)(_  )  ( \n(__)(__)     (__)(__) (__) (_____)(_/\\/\\_)(____)(_/\\_)\n");
+				Console.WriteLine("Omar Adrian Salinas Villanueva \nJesus Moya Lozano \nPablo Antonio García Vásquez \nLeonardo Alejandro Villanueva Betancour \n");
+				Console.WriteLine("LEVEL SELECTION.\n");
+
+				for (int i = 0; i <= levels.Count; i++) {
+					if (i == selected_level) {
+						Console.ForegroundColor = ConsoleColor.Green;
+						Console.Write(" \u00BB ");
+					} else {
+						Console.Write(" \u00B7 ");
+					}
+
+					if (i < levels.Count) {
+						Console.WriteLine("{0}", levels[i].name);
+					} else {
+						Console.WriteLine("Exit");
+					}
+
+					Console.ResetColor();
+				}
+
+				Console.WriteLine("\nPress \u2191 or \u2193 arrows to navigate...");
+				Console.WriteLine("Press Enter to select.");
+
+				if (Console.KeyAvailable) {
+					key_pressed = Console.ReadKey(false).Key;
+
+					if (key_pressed == ConsoleKey.Enter) {
+						Console.CursorVisible = true;
+						return;
+					} else if (key_pressed == ConsoleKey.UpArrow) {
+						selected_level--;
+					} else if (key_pressed == ConsoleKey.DownArrow) {
+						selected_level++;
+					}
+
+					selected_level = Math.Min(Math.Max(0, selected_level), levels.Count);
+				}
+			}
+
+			Console.CursorVisible = true;
+		}
+
 		static void display_path(ref Grid grid, ref List<State> path) {
 			int console_line_start;
 
@@ -236,7 +259,7 @@ namespace atomixcs {
 
 						if (key_pressed == ConsoleKey.LeftArrow) {
 							i--;
-						} else if(key_pressed == ConsoleKey.RightArrow) {
+						} else if (key_pressed == ConsoleKey.RightArrow) {
 							i++;
 						}
 
