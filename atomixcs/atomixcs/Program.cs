@@ -78,6 +78,7 @@ namespace atomixcs {
 				display_menu(ref levels, ref selected_level);
 
 				if (selected_level < 0 || selected_level >= levels.Count) {
+					Console.CursorVisible = true;
 					return;
 				} else {
 					/** Base grid and states creation **/

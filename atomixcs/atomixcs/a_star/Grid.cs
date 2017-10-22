@@ -158,8 +158,6 @@ namespace atomixcs.a_star {
 				positions.Add(current_state.items[i].position);
 			}
 
-			int color_index = 0;
-
 			ConsoleColor[] colors = {
 				ConsoleColor.Magenta,
 				ConsoleColor.Red,
@@ -181,9 +179,7 @@ namespace atomixcs.a_star {
 								Console.ForegroundColor = ConsoleColor.Cyan;
 								character = 'C';
 							} else {
-								Console.ForegroundColor = colors[color_index];
-								color_index++;
-
+								Console.ForegroundColor = colors[index - 1];
 								character = 'H';
 							}
 						} else {
