@@ -19,8 +19,6 @@ namespace atomixcs.a_star {
 			Vector2 distance_target;
 			Vector2 difference;
 
-			heuristic += manhattan_distance(first_current, first_target);
-
 			for (int i = 1; i < current.items.Length && i < target.items.Length; i++) {
 				distance_current = first_current.position - current.items[i].position;
 				distance_target = first_target.position - target.items[i].position;
@@ -89,6 +87,9 @@ namespace atomixcs.a_star {
 			List<State> neighbouring_states;
 
 			/** For testing only. **/
+			int console_line = Console.CursorTop;
+			int console_row = Console.CursorLeft;
+
 			int iteration_count = 0;
 			Stopwatch watch = new Stopwatch();
 			/** For testing only. **/
@@ -104,15 +105,17 @@ namespace atomixcs.a_star {
 				current_state = open_list.Dequeue();
 				closed_list.Add(current_state);
 
+				watch.Stop();
+				/**Console.CursorTop = console_line;
+				Console.CursorLeft = console_row;
+
+				Console.WriteLine("CURRENT state:");
+				grid.draw_grid(current_state);**/
+				Console.Write("\relapsed: {0} | iterations: {1} | heuristic: {2} | f-cost: {3}      ", format_time(watch.ElapsedMilliseconds), iteration_count, current_state.heuristic, current_state.f_cost);
+				watch.Start();
+
 				if (compare_to_target(current_state, target_state)) {
 					watch.Stop();
-
-					Console.WriteLine("\n\n==============================================\n");
-
-					Console.WriteLine("END state:");
-					grid.draw_grid(current_state);
-
-					Console.WriteLine("\nFinished in: {0} iterations | {1}", iteration_count, format_time(watch.ElapsedMilliseconds));
 					return reconstruct_path(current_state, start_state, target_state);
 				}
 				
@@ -133,11 +136,6 @@ namespace atomixcs.a_star {
 						}
 					}
 				}
-
-				watch.Stop();
-
-				Console.Write("\relapsed: {0} | iterations: {1} | heuristic: {2} | f-cost: {3}      ", format_time(watch.ElapsedMilliseconds), iteration_count, current_state.heuristic, current_state.f_cost);
-				watch.Start();
 			}
 
 			watch.Stop();

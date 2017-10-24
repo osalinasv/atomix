@@ -179,7 +179,12 @@ namespace atomixcs.a_star {
 								Console.ForegroundColor = ConsoleColor.Cyan;
 								character = 'C';
 							} else {
-								Console.ForegroundColor = colors[index - 1];
+								if (index - 1 >= 0 && index - 1 < colors.Length) {
+									Console.ForegroundColor = colors[index - 1];
+								} else {
+									Console.ForegroundColor = ConsoleColor.Green;
+								}
+
 								character = 'H';
 							}
 						} else {
